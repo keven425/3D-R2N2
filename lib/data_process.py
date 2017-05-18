@@ -3,7 +3,6 @@ Parallel data loading functions
 '''
 import sys
 import time
-import theano
 import numpy as np
 import traceback
 from PIL import Image
