@@ -1,14 +1,11 @@
 from __future__ import absolute_import
 from __future__ import division
 
-import logging
-import sys
-
 import tensorflow as tf
 import numpy as np
 
 
-class GRU3dCell(tf.nn.rnn_cell.RNNCell):
+class GRU3dCell(tf.contrib.rnn.RNNCell):
     """Wrapper around our GRU cell implementation
     """
 

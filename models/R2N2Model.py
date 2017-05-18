@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from models.Model import Model
-from GRU3dCell import GRU3dCell
+from models.GRU3dCell import GRU3dCell
 
 from lib.config import cfg
 

@@ -11,8 +11,8 @@ import multiprocessing as mp
 
 # Theano
 from lib.config import cfg, cfg_from_file, cfg_from_list
-from lib.test_net import test_net
-from lib.train_net import train_net
+import models.train
+import models.test
 
 
 def parse_args():
@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument(
         '--rand', dest='randomize', help='randomize (do not use a fixed seed)', action='store_true')
     parser.add_argument(
-        '--test', dest='test', help='randomize (do not use a fixed seed)', action='store_true')
+        '--test', dest='test', help='randomize (do not use a fixed seed)', default=False, action='store_true')
     parser.add_argument('--net', dest='net_name', help='name of the net', default=None, type=str)
     parser.add_argument(
         '--model', dest='model_name', help='name of the network model', default=None, type=str)
@@ -102,9 +102,9 @@ def main():
     pprint.pprint(cfg)
 
     if not args.test:
-        train_net()
+        models.train.train_net()
     else:
-        test_net()
+        models.test.test_net()
 
 
 if __name__ == '__main__':

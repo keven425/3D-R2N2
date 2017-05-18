@@ -6,9 +6,7 @@ import sklearn.metrics
 from multiprocessing import Queue
 
 # Theano & network
-from models import load_model
 from lib.config import cfg
-from lib.solver import Solver
 from lib.data_io import category_model_id_pair
 from lib.data_process import make_data_processes, get_while_running
 

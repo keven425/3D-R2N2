@@ -2,12 +2,10 @@ import tensorflow as tf
 import inspect
 from multiprocessing import Queue
 import os
-import sys
 from datetime import datetime
 import numpy as np
 
-from models import load_model
-from R2N2Model import R2N2Model
+from models.R2N2Model import R2N2Model
 
 from lib.config import cfg
 from lib.data_io import category_model_id_pair

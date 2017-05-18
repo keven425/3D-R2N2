@@ -29,9 +29,9 @@ __C.CONST.WEIGHTS = ''  # when set, load the weights from the file
 #
 __C.DIR = edict()
 # Path where taxonomy.json is stored
-__C.DIR.SHAPENET_QUERY_PATH = './ShapeNet/ShapeNetVox32/'
-__C.DIR.MODEL_PATH = './ShapeNet/ShapeNetCore.v1/%s/%s/model.obj'
-__C.DIR.VOXEL_PATH = './ShapeNet/ShapeNetVox32/%s/%s/model.binvox'
+__C.DIR.SHAPENET_QUERY_PATH = '../datasets/ShapeNetVox32/'
+__C.DIR.MODEL_PATH = '../datasets/ShapeNetCore.v1/%s/%s/model.obj'
+__C.DIR.VOXEL_PATH = '../datasets/ShapeNetVox32/%s/%s/model.binvox'
 __C.DIR.RENDERING_PATH = './ShapeNet/ShapeNetRendering/%s/%s/rendering'
 __C.DIR.OUT_PATH = './output/default'
 
