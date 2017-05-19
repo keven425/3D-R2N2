@@ -19,10 +19,13 @@ __C.CONST.RNG_SEED = 0
 __C.CONST.IMG_W = 127
 __C.CONST.IMG_H = 127
 __C.CONST.N_VOX = 32
-__C.CONST.N_VIEWS = 5
-__C.CONST.BATCH_SIZE = 36
-__C.CONST.NETWORK_CLASS = 'ResidualGRUNet'
+__C.CONST.N_VIEWS = 24
+# __C.CONST.BATCH_SIZE = 36
+__C.CONST.BATCH_SIZE = 2 # TODO: change back
+# __C.CONST.NETWORK_CLASS = 'ResidualGRUNet'
 __C.CONST.WEIGHTS = ''  # when set, load the weights from the file
+__C.max_timestep = 24
+__C.dropout_keep = 1.0
 
 #
 # Directories
@@ -32,7 +35,7 @@ __C.DIR = edict()
 __C.DIR.SHAPENET_QUERY_PATH = '../datasets/ShapeNetVox32/'
 __C.DIR.MODEL_PATH = '../datasets/ShapeNetCore.v1/%s/%s/model.obj'
 __C.DIR.VOXEL_PATH = '../datasets/ShapeNetVox32/%s/%s/model.binvox'
-__C.DIR.RENDERING_PATH = './ShapeNet/ShapeNetRendering/%s/%s/rendering'
+__C.DIR.RENDERING_PATH = '../datasets/ShapeNetRendering/%s/%s/rendering'
 __C.DIR.OUT_PATH = './output/default'
 
 #
@@ -54,7 +57,7 @@ __C.TRAIN.NUM_RENDERING = 24
 __C.TRAIN.NUM_VALIDATION_ITERATIONS = 24
 __C.TRAIN.VALIDATION_FREQ = 2000
 __C.TRAIN.NAN_CHECK_FREQ = 2000
-__C.TRAIN.RANDOM_NUM_VIEWS = True  # feed in random # views if n_views > 1
+__C.TRAIN.RANDOM_NUM_VIEWS = False  # feed in random # views if n_views > 1
 
 __C.QUEUE_SIZE = 15  # maximum number of minibatches that can be put in a data queue
 

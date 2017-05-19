@@ -75,7 +75,7 @@ def train(train_queue, val_queue=None):
     ''' Given data queues, train the network '''
     with tf.Graph().as_default():
 
-        model = R2N2Model()
+        model = R2N2Model(cfg)
 
         print('Num params: %d' % sum(v.get_shape().num_elements() for v in tf.trainable_variables()))
         saver = tf.train.Saver(write_version=tf.train.SaverDef.V1)
@@ -125,7 +125,7 @@ def train(train_queue, val_queue=None):
                 train_timer.tic()
                 loss, grad_norm, learning_rate, logits_norm, grads_vars = model.train_on_batch(session, batch_img, batch_voxel, lr)
                 train_timer.toc()
-                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm: %f' % (lr, grad_norm, learning_rate, logits_norm))
+                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm: %f' % (loss, grad_norm, learning_rate, logits_norm))
 
                 training_losses.append(loss)
 
@@ -141,7 +141,7 @@ def train(train_queue, val_queue=None):
                     val_losses = []
                     for i in range(cfg.TRAIN.NUM_VALIDATION_ITERATIONS):
                         batch_img, batch_voxel = val_queue.get()
-                        val_pred, val_loss = model.evaluate_on_batch(batch_img, batch_voxel)
+                        val_pred, val_loss = model.evaluate_on_batch(session, batch_img, batch_voxel)
                         val_losses.append(val_loss)
                     print('%s Test loss: %f' % (datetime.now(), np.mean(val_losses)))
 

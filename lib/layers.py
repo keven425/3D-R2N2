@@ -465,10 +465,13 @@
 #                               self._input_shape[3], self._input_shape[4]]
 #
 #         if params is None:
+#             # filter weight
 #             self.Wh = Weight(self._filter_shape, is_bias=False)
 #
+#             # fc weight shape
 #             self._Wx_shape = [self._fc_layer._output_shape[1], np.prod(self._output_shape[1:])]
 #
+#             # fc weight
 #             # Each 3D cell will have independent weights but for computational
 #             # speed, we expand the cells and compute a matrix multiplication.
 #             self.Wx = Weight(

@@ -130,9 +130,9 @@ class ReconstructionDataProcess(DataProcess):
 
             # This will be fed into the queue. create new batch everytime
             batch_img = np.zeros(
-                (curr_n_views, self.batch_size, 3, img_h, img_w), dtype=theano.config.floatX)
+                (self.batch_size, curr_n_views, img_h, img_w, 3), dtype=np.float32)
             batch_voxel = np.zeros(
-                (self.batch_size, n_vox, 2, n_vox, n_vox), dtype=theano.config.floatX)
+                (self.batch_size, n_vox, n_vox, n_vox), dtype=np.int32)
 
             # load each data instance
             for batch_id, db_ind in enumerate(db_inds):
@@ -143,14 +143,12 @@ class ReconstructionDataProcess(DataProcess):
                 for view_id, image_id in enumerate(image_ids):
                     im = self.load_img(category, model_id, image_id)
                     # channel, height, width
-                    batch_img[view_id, batch_id, :, :, :] = \
-                        im.transpose((2, 0, 1)).astype(theano.config.floatX)
+                    batch_img[batch_id, view_id, :, :, :] = im.astype(np.float32)
 
                 voxel = self.load_label(category, model_id)
                 voxel_data = voxel.data
 
-                batch_voxel[batch_id, :, 0, :, :] = voxel_data < 1
-                batch_voxel[batch_id, :, 1, :, :] = voxel_data
+                batch_voxel[batch_id, :, :, :] = voxel_data > 1
 
             # The following will wait until the queue frees
             self.data_queue.put((batch_img, batch_voxel), block=True)
