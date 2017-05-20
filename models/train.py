@@ -73,6 +73,7 @@ def train_net():
 
 def train(train_queue, val_queue=None):
     ''' Given data queues, train the network '''
+
     with tf.Graph().as_default():
 
         model = R2N2Model(cfg)
@@ -82,7 +83,18 @@ def train(train_queue, val_queue=None):
 
         with tf.Session() as session:
 
-            init = tf.global_variables_initializer()
+            if cfg.DIR.WEIGHTS_PATH:
+                # load pre-trained weights
+                print('Restoring model from: ' + cfg.DIR.WEIGHTS_PATH)
+                saver.restore(session, cfg.DIR.WEIGHTS_PATH)
+                variables_to_init = []
+                all_variables = tf.global_variables()
+                for var in all_variables:
+                    if not session.run(tf.is_variable_initialized(var)):
+                        variables_to_init.append(var)
+                init = tf.variables_initializer(variables_to_init)
+            else:
+                init = tf.global_variables_initializer()
             session.run(init)
 
             # Parameter directory
@@ -138,12 +150,12 @@ def train(train_queue, val_queue=None):
 
                 if train_ind % cfg.TRAIN.VALIDATION_FREQ == 0 and val_queue is not None:
                     # Print test loss and params to check convergence every N iterations
-                    val_losses = []
+                    ious = []
                     for i in range(cfg.TRAIN.NUM_VALIDATION_ITERATIONS):
                         batch_img, batch_voxel = val_queue.get()
-                        val_pred, val_loss = model.evaluate_on_batch(session, batch_img, batch_voxel)
-                        val_losses.append(val_loss)
-                    print('%s Test loss: %f' % (datetime.now(), np.mean(val_losses)))
+                        iou = model.evaluate_on_batch(session, batch_img, batch_voxel)
+                        ious.append(np.mean(iou))
+                    print('%s Validation IoU: %f' % (datetime.now(), np.mean(ious)))
 
                 if train_ind % cfg.TRAIN.SAVE_FREQ == 0 and not train_ind == 0:
                     model.save(saver, session)

@@ -7,6 +7,7 @@ import numpy as np
 import argparse
 import pprint
 import logging
+import time
 import multiprocessing as mp
 
 # Theano
@@ -17,12 +18,7 @@ import models.test
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Main 3Deverything train/test file')
-    parser.add_argument(
-        '--gpu',
-        dest='gpu_id',
-        help='GPU device id to use [gpu0]',
-        default=cfg.CONST.DEVICE,
-        type=str)
+
     parser.add_argument(
         '--cfg',
         dest='cfg_files',
@@ -31,16 +27,26 @@ def parse_args():
         default=None,
         type=str)
     parser.add_argument(
-        '--rand', dest='randomize', help='randomize (do not use a fixed seed)', action='store_true')
+        '--name',
+        dest='name',
+        help='name of the run',
+        default=None,
+        type=str)
     parser.add_argument(
-        '--test', dest='test', help='randomize (do not use a fixed seed)', default=False, action='store_true')
-    parser.add_argument('--net', dest='net_name', help='name of the net', default=None, type=str)
+        '--rand',
+        dest='randomize',
+        help='randomize (do not use a fixed seed)',
+        action='store_true')
     parser.add_argument(
-        '--model', dest='model_name', help='name of the network model', default=None, type=str)
+        '--test',
+        dest='test',
+        help='randomize (do not use a fixed seed)',
+        default=False,
+        action='store_true')
     parser.add_argument(
         '--batch-size',
         dest='batch_size',
-        help='name of the net',
+        help='batch size',
         default=cfg.CONST.BATCH_SIZE,
         type=int)
     parser.add_argument(
@@ -50,13 +56,22 @@ def parse_args():
         default=cfg.TRAIN.NUM_ITERATION,
         type=int)
     parser.add_argument(
-        '--dataset', dest='dataset', help='dataset config file', default=None, type=str)
+        '--dataset',
+        dest='dataset',
+        help='dataset config file',
+        default=None,
+        type=str)
     parser.add_argument(
-        '--set', dest='set_cfgs', help='set config keys', default=None, nargs=argparse.REMAINDER)
-    parser.add_argument('--exp', dest='exp', help='name of the experiment', default=None, type=str)
+        '--set',
+        dest='set_cfgs',
+        help='set config keys',
+        default=None,
+        nargs=argparse.REMAINDER)
     parser.add_argument(
-        '--weights', dest='weights', help='Initialize network from the weights file', default=None)
-    parser.add_argument('--out', dest='out_path', help='set output path', default=cfg.DIR.OUT_PATH)
+        '--weights',
+        dest='weights',
+        help='Initialize network from the weights file',
+        default=None)
     parser.add_argument(
         '--init-iter',
         dest='init_iter',
@@ -84,19 +99,19 @@ def main():
         cfg_from_list(['CONST.BATCH_SIZE', args.batch_size])
     if args.iter is not None:
         cfg_from_list(['TRAIN.NUM_ITERATION', args.iter])
-    if args.net_name is not None:
-        cfg_from_list(['NET_NAME', args.net_name])
-    if args.model_name is not None:
-        cfg_from_list(['CONST.NETWORK_CLASS', args.model_name])
     if args.dataset is not None:
         cfg_from_list(['DATASET', args.dataset])
-    if args.exp is not None:
-        cfg_from_list(['TEST.EXP_NAME', args.exp])
-    if args.out_path is not None:
-        cfg_from_list(['DIR.OUT_PATH', args.out_path])
     if args.weights is not None:
-        cfg_from_list(['CONST.WEIGHTS', args.weights, 'TRAIN.RESUME_TRAIN', True,
-                       'TRAIN.INITIAL_ITERATION', int(args.init_iter)])
+        cfg_from_list(['DIR.WEIGHTS_PATH', args.weights])
+
+    # set output path based on config params and name
+    out_path = './output/'
+    if args.name:
+        out_path += args.name + '_'
+    out_path += 'batch' + str(cfg.CONST.BATCH_SIZE) + '_' \
+              + 'niter' + str(cfg.TRAIN.NUM_ITERATION) + '_' \
+              + str(int(time.time()))
+    cfg.DIR.OUT_PATH = out_path
 
     print('Using config:')
     pprint.pprint(cfg)

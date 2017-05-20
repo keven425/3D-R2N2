@@ -1,14 +1,19 @@
 import numpy as np
 
 
-def evaluate_voxel_prediction(preds, gt, thresh):
-    preds_occupy = preds[:, 1, :, :] >= thresh
-    diff = np.sum(np.logical_xor(preds_occupy, gt[:, 1, :, :]))
-    intersection = np.sum(np.logical_and(preds_occupy, gt[:, 1, :, :]))
-    union = np.sum(np.logical_or(preds_occupy, gt[:, 1, :, :]))
-    num_fp = np.sum(np.logical_and(preds_occupy, gt[:, 0, :, :]))  # false positive
-    num_fn = np.sum(np.logical_and(np.logical_not(preds_occupy), gt[:, 1, :, :]))  # false negative
-    return np.array([diff, intersection, union, num_fp, num_fn])
+def evaluate_voxel_prediction(preds, ground_truth, thresh):
+    # preds.shape: (batch_size, 32, 32, 32, 2)
+    preds_occupy = preds[:, :, :, :, 1] >= thresh
+    # diff = np.sum(np.logical_xor(preds_occupy, ground_truth))
+    intersection = np.sum(np.logical_and(preds_occupy, ground_truth), axis=(1, 2, 3))
+    union = np.sum(np.logical_or(preds_occupy, ground_truth), axis=(1, 2, 3))
+    iou = intersection / union
+    iou = np.mean(iou)
+    return iou
+
+    # n_false_pos = np.sum(np.logical_and(preds_occupy, ground_truth[:, 0, :, :]))  # false positive
+    # n_false_neg = np.sum(np.logical_and(np.logical_not(preds_occupy), ground_truth[:, 1, :, :]))  # false negative
+    # return np.array([iou, diff, intersection, union, n_false_pos, n_false_neg])
 
 
 def voxel2mesh(voxels):

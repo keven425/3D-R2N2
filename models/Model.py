@@ -152,7 +152,7 @@ class Model(object):
 
     def save(self, saver, sess, best=False):
         if saver:
-            path = os.path.join(cfg.DIR.OUT_PATH)
+            path = os.path.join(cfg.DIR.OUT_PATH + '/model.ckpt')
             print("Saving model in %s", path)
             dirpath = os.path.dirname(path)
             if not os.path.exists(dirpath):

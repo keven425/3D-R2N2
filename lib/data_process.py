@@ -148,7 +148,7 @@ class ReconstructionDataProcess(DataProcess):
                 voxel = self.load_label(category, model_id)
                 voxel_data = voxel.data
 
-                batch_voxel[batch_id, :, :, :] = voxel_data > 1
+                batch_voxel[batch_id, :, :, :] = (voxel_data == True).astype(np.int32)
 
             # The following will wait until the queue frees
             self.data_queue.put((batch_img, batch_voxel), block=True)

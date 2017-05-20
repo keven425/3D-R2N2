@@ -4,6 +4,8 @@ from models.Model import Model
 from models.GRU3dCell import GRU3dCell
 import models.unpool_3d
 
+import lib.voxel
+
 class R2N2Model(Model):
 
   def __init__(self, config):
@@ -37,7 +39,9 @@ class R2N2Model(Model):
   def evaluate_on_batch(self, sess, input_batch, labels_batch):
     feed = self.create_feed_dict(input_batch=input_batch, labels_batch=labels_batch)
     pred, loss = sess.run([self.pred, self.loss], feed_dict=feed)  # pick the class that has highest probability
-    return pred, loss
+    thresh = self.config.TEST.VOXEL_THRESH[0]
+    metrics = lib.voxel.evaluate_voxel_prediction(pred, labels_batch, thresh)
+    return metrics
 
   def add_placeholders(self):
     self.input_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.max_timestep, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
@@ -187,6 +191,7 @@ class R2N2Model(Model):
     fc, h, deconv4 = logits
 
     self.logits_norm = tf.sqrt(tf.reduce_mean(tf.square(deconv4)))
+    self.labels_placeholder = tf.Print(self.labels_placeholder, [self.labels_placeholder], message="labels")
     cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=deconv4, labels=self.labels_placeholder)
     loss = tf.reduce_mean(cross_entropy)
     return loss

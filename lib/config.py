@@ -37,6 +37,7 @@ __C.DIR.MODEL_PATH = '../datasets/ShapeNetCore.v1/%s/%s/model.obj'
 __C.DIR.VOXEL_PATH = '../datasets/ShapeNetVox32/%s/%s/model.binvox'
 __C.DIR.RENDERING_PATH = '../datasets/ShapeNetRendering/%s/%s/rendering'
 __C.DIR.OUT_PATH = './output/default'
+__C.DIR.WEIGHTS_PATH = ''
 
 #
 # Training
