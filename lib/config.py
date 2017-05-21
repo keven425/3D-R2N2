@@ -24,7 +24,6 @@ __C.CONST.N_VIEWS = 24
 __C.CONST.BATCH_SIZE = 2 # TODO: change back
 # __C.CONST.NETWORK_CLASS = 'ResidualGRUNet'
 __C.CONST.WEIGHTS = ''  # when set, load the weights from the file
-__C.max_timestep = 24
 __C.dropout_keep = 1.0
 
 #

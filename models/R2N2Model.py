@@ -44,7 +44,7 @@ class R2N2Model(Model):
     return metrics
 
   def add_placeholders(self):
-    self.input_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.max_timestep, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
+    self.input_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.CONST.N_VIEWS, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
     self.labels_placeholder = tf.placeholder(tf.int32, shape=(None, self.config.CONST.N_VOX, self.config.CONST.N_VOX, self.config.CONST.N_VOX))
     self.dropout_keep_placeholder = tf.placeholder(tf.float32)
     self.learning_rate_placeholder = tf.placeholder(tf.float32)
@@ -65,10 +65,11 @@ class R2N2Model(Model):
 
     with tf.variable_scope("R2N2_logit"):
 
-      # reshape to merge n_batches, max_timesteps
+      # reshape to merge n_batches, CONST.N_VIEWS
       # because conv2d() function only takes 4D tensor, for 2D convolution
       self.input_placeholder.get_shape()
       input = tf.reshape(self.input_placeholder, shape=(-1, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
+      input = tf.Print(input, [tf.reduce_min(input), tf.reduce_max(input), input], message="input")
 
       # 1st conv layer
       conv11 = tf.contrib.layers.conv2d(inputs=input, num_outputs=64, kernel_size=[7, 7], stride=1, padding="same",
@@ -123,20 +124,22 @@ class R2N2Model(Model):
       conv5 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='conv5_pool')
 
       conv5_flattened = tf.contrib.layers.flatten(conv5)
+      conv5_flattened = tf.Print(conv5_flattened, [tf.reduce_min(conv5_flattened), tf.reduce_max(conv5_flattened), conv5_flattened], message="conv5_flattened")
 
       n_fc_outputs = 1024
       fc = tf.contrib.layers.fully_connected(inputs=conv5_flattened, num_outputs=n_fc_outputs,
         activation_fn=tf.nn.relu, scope="fc1", reuse=False)
 
-      # reshape back to (batch_size, max_timesteps, n_fc_outputs)
-      fc = tf.reshape(fc, shape=(-1, self.config.max_timestep, n_fc_outputs))
+      # reshape back to (batch_size, CONST.N_VIEWS, n_fc_outputs)
+      fc = tf.reshape(fc, shape=(-1, self.config.CONST.N_VIEWS, n_fc_outputs))
 
       # 3D GRU
       grid_state_size = (4, 4, 4, 128)
       cell = GRU3dCell(fc.shape[-1].value, grid_state_size)
       _, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
       shape = [-1] + list(grid_state_size)
-      h = tf.reshape(h, shape=(shape)) # reshape back to 3d
+      h = tf.reshape(h, shape=shape) # reshape back to 3d
+      h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
 
       # deconvolutional layers
       # 1st deconv layer
@@ -155,31 +158,27 @@ class R2N2Model(Model):
         activation=tf.nn.relu, use_bias=False, name="deconv21", reuse=False)
       deconv22 = tf.layers.conv3d(deconv21, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv22", reuse=False)
-      deconv2_res = tf.layers.conv3d(
-        deconv1, filters=64, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
+      deconv2_res = tf.layers.conv3d(deconv1, filters=64, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv2_res", reuse=False)
       deconv2 = deconv22 + deconv2_res
       deconv2 = models.unpool_3d.unpool_3d_zero_filled(deconv2)
 
 
       # 3rd deconv layer
-      deconv31 = tf.layers.conv3d(
-        deconv2, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+      deconv31 = tf.layers.conv3d(deconv2, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv31", reuse=False)
-      deconv32 = tf.layers.conv3d(
-        deconv31, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+      deconv32 = tf.layers.conv3d(deconv31, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv32", reuse=False)
-      deconv3_res = tf.layers.conv3d(
-        deconv2, filters=32, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
+      deconv3_res = tf.layers.conv3d(deconv2, filters=32, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv3_res", reuse=False)
       deconv3 = deconv32 + deconv3_res
       deconv3 = models.unpool_3d.unpool_3d_zero_filled(deconv3)
 
 
       # final deconv layer
-      deconv4 = tf.layers.conv3d(
-        deconv3, filters=2, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
+      deconv4 = tf.layers.conv3d(deconv3, filters=2, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
         activation=None, use_bias=False, name="deconv4", reuse=False)
+      deconv4 = tf.Print(deconv4, [tf.reduce_min(deconv4), tf.reduce_max(deconv4), deconv4], message="deconv4")
 
     return fc, h, deconv4
 
