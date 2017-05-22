@@ -79,7 +79,7 @@ def train(train_queue, val_queue=None):
         model = R2N2Model(cfg)
 
         print('Num params: %d' % sum(v.get_shape().num_elements() for v in tf.trainable_variables()))
-        saver = tf.train.Saver(write_version=tf.train.SaverDef.V1)
+        saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
 
         with tf.Session() as session:
 
