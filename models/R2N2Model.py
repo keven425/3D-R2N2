@@ -132,6 +132,7 @@ class R2N2Model(Model):
 
       # reshape back to (batch_size, CONST.N_VIEWS, n_fc_outputs)
       fc = tf.reshape(fc, shape=(-1, self.config.CONST.N_VIEWS, n_fc_outputs))
+      fc = tf.Print(fc, [tf.reduce_min(fc), tf.reduce_max(fc), fc], message="fc")
 
       # 3D GRU
       grid_state_size = (4, 4, 4, 128)

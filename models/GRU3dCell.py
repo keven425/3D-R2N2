@@ -46,16 +46,15 @@ class GRU3dCell(tf.contrib.rnn.RNNCell):
         with tf.variable_scope(scope):
             shape = [-1] + list(self._state_size)
             _state = tf.reshape(state, shape=shape)
-            batch_size = inputs.get_shape()[0].value
-            n_h = self._state_size[3]
+            n_h = self._state_size[-1]
             W_shape = [self.input_size] + list(self._state_size)
 
             W_f = tf.get_variable("W_f", shape=W_shape, initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
             b_f = tf.get_variable("b_f", shape=self._state_size, dtype=np.float32)
             W_i = tf.get_variable("W_i", shape=W_shape, initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
             b_i = tf.get_variable("b_i", shape=self._state_size, dtype=np.float32)
-            W_s = tf.get_variable("W_s", shape=W_shape, initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
-            b_s = tf.get_variable("b_s", shape=self._state_size, dtype=np.float32)
+            W_h = tf.get_variable("W_s", shape=W_shape, initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+            b_h = tf.get_variable("b_s", shape=self._state_size, dtype=np.float32)
 
             Uf_h = tf.layers.conv3d(
                 _state,
@@ -68,7 +67,7 @@ class GRU3dCell(tf.contrib.rnn.RNNCell):
                 name="gru_conv3d_f",
                 reuse=False
             )
-            z_t = tf.nn.sigmoid(tf.einsum('ij,jklmo->iklmo', inputs, W_i) + Uf_h + b_i)
+            u_t = tf.nn.sigmoid(tf.einsum('ij,jklmo->iklmo', inputs, W_f) + Uf_h + b_f)
 
             Ui_h = tf.layers.conv3d(
                 _state,
@@ -81,9 +80,9 @@ class GRU3dCell(tf.contrib.rnn.RNNCell):
                 name="gru_conv3d_i",
                 reuse=False
             )
-            r_t = tf.nn.sigmoid(tf.einsum('ij,jklmo->iklmo', inputs, W_f) + Ui_h + b_f)
+            r_t = tf.nn.sigmoid(tf.einsum('ij,jklmo->iklmo', inputs, W_i) + Ui_h + b_i)
 
-            Us_h = tf.layers.conv3d(
+            Uh_h = tf.layers.conv3d(
                 r_t * _state,
                 filters=n_h,
                 kernel_size=[3, 3, 3],
@@ -94,9 +93,9 @@ class GRU3dCell(tf.contrib.rnn.RNNCell):
                 name="gru_conv3d_s",
                 reuse=False
             )
-            o_t = tf.nn.tanh(tf.einsum('ij,jklmo->iklmo', inputs, W_s) + Us_h + b_s)
+            o_t = tf.nn.tanh(tf.einsum('ij,jklmo->iklmo', inputs, W_h) + Uh_h + b_h)
 
-            h_t = z_t * _state + (1 - z_t) * o_t
+            h_t = (1 - u_t) * _state + u_t * o_t
             h_t = tf.reshape(h_t, shape=(-1, self.state_size))
             new_state = h_t
 
