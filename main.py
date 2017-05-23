@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 import sys
 if (sys.version_info < (3, 0)):
-    raise Exception("Please follow the installation instruction on 'https://github.com/chrischoy/3D-R2N2'")
+    raise Exception("Please follow the installation instruction on 'https://github.com/keven425/3D-R2N2'")
 
 import numpy as np
 import argparse
 import pprint
 import logging
+import logging.handlers
 import time
 import multiprocessing as mp
 
@@ -126,4 +127,6 @@ if __name__ == '__main__':
     mp.log_to_stderr()
     logger = mp.get_logger()
     logger.setLevel(logging.INFO)
+    handler = logging.handlers.SysLogHandler(address = '/dev/log')
+    logger.addHandler(handler)
     main()
