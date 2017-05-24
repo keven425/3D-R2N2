@@ -19,7 +19,7 @@ __C.CONST.RNG_SEED = 0
 __C.CONST.IMG_W = 127
 __C.CONST.IMG_H = 127
 __C.CONST.N_VOX = 32
-__C.CONST.N_VIEWS = 24
+__C.CONST.N_VIEWS = 4 # random number of views 2 .. 5
 # __C.CONST.BATCH_SIZE = 36
 __C.CONST.BATCH_SIZE = 2 # TODO: change back
 # __C.CONST.NETWORK_CLASS = 'ResidualGRUNet'
@@ -57,7 +57,7 @@ __C.TRAIN.NUM_RENDERING = 24
 __C.TRAIN.NUM_VALIDATION_ITERATIONS = 24
 __C.TRAIN.VALIDATION_FREQ = 2000
 __C.TRAIN.NAN_CHECK_FREQ = 2000
-__C.TRAIN.RANDOM_NUM_VIEWS = False  # feed in random # views if n_views > 1
+__C.TRAIN.RANDOM_NUM_VIEWS = True  # feed in random # views if n_views > 1
 
 __C.QUEUE_SIZE = 15  # maximum number of minibatches that can be put in a data queue
 

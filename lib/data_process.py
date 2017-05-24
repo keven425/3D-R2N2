@@ -124,7 +124,7 @@ class ReconstructionDataProcess(DataProcess):
 
             # We will sample # views
             if cfg.TRAIN.RANDOM_NUM_VIEWS:
-                curr_n_views = np.random.randint(n_views) + 1
+                curr_n_views = np.random.randint(n_views) + 2
             else:
                 curr_n_views = n_views
 
