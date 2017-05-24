@@ -128,7 +128,7 @@ class R2N2Model(Model):
 
       n_fc_outputs = 1024
       fc = tf.contrib.layers.fully_connected(inputs=conv5_flattened, num_outputs=n_fc_outputs,
-        activation_fn=tf.nn.relu, scope="fc1", reuse=False)
+                                             normalizer_fn=tf.contrib.layers.batch_norm, activation_fn=tf.nn.relu, scope="fc1", reuse=False)
 
       # reshape back to (batch_size, CONST.N_VIEWS, n_fc_outputs)
       fc = tf.reshape(fc, shape=(-1, self.config.CONST.N_VIEWS, n_fc_outputs))
@@ -189,7 +189,6 @@ class R2N2Model(Model):
 
   def add_loss_op(self, logits):
     fc, h, deconv4 = logits
-
     self.logits_norm = tf.sqrt(tf.reduce_mean(tf.square(deconv4)))
     self.labels_placeholder = tf.Print(self.labels_placeholder, [self.labels_placeholder], message="labels")
     cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=deconv4, labels=self.labels_placeholder)
