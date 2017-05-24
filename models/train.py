@@ -149,6 +149,7 @@ def train(train_queue, val_queue=None):
                     print('%s Iter: %d Loss: %f' % (datetime.now(), train_ind, loss))
 
                 if train_ind % cfg.TRAIN.VALIDATION_FREQ == 0 and val_queue is not None:
+                    print('validating ...')
                     # Print test loss and params to check convergence every N iterations
                     ious = []
                     for i in range(cfg.TRAIN.NUM_VALIDATION_ITERATIONS):

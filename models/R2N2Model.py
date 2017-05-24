@@ -28,7 +28,8 @@ class R2N2Model(Model):
         input_batch: np.ndarray of shape (None, n_timesteps, height, width, channel)
         labels_batch: np.ndarray of shape (None, x_size, y_size, z_size, 1)
     """
-    feed = self.create_feed_dict(input_batch=input_batch,
+    feed = self.create_feed_dict(is_training=True,
+                                 input_batch=input_batch,
                                  labels_batch=labels_batch,
                                  lr=lr,
                                  dropout_keep=self.config.dropout_keep)
@@ -37,20 +38,24 @@ class R2N2Model(Model):
     return loss, grad_norm, learning_rate, logits_norm, grads_vars
 
   def evaluate_on_batch(self, sess, input_batch, labels_batch):
-    feed = self.create_feed_dict(input_batch=input_batch, labels_batch=labels_batch)
+    feed = self.create_feed_dict(is_training=False,
+                                 input_batch=input_batch,
+                                 labels_batch=labels_batch)
     pred, loss = sess.run([self.pred, self.loss], feed_dict=feed)  # pick the class that has highest probability
     thresh = self.config.TEST.VOXEL_THRESH[0]
     metrics = lib.voxel.evaluate_voxel_prediction(pred, labels_batch, thresh)
     return metrics
 
   def add_placeholders(self):
+    self.is_training_placeholder = tf.placeholder(tf.bool, shape=())
     self.input_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.CONST.N_VIEWS, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
     self.labels_placeholder = tf.placeholder(tf.int32, shape=(None, self.config.CONST.N_VOX, self.config.CONST.N_VOX, self.config.CONST.N_VOX))
     self.dropout_keep_placeholder = tf.placeholder(tf.float32)
     self.learning_rate_placeholder = tf.placeholder(tf.float32)
 
-  def create_feed_dict(self, input_batch, labels_batch=None, lr=None, dropout_keep=1.0):
-    feed_dict = {self.input_placeholder: input_batch,
+  def create_feed_dict(self, is_training, input_batch, labels_batch=None, lr=None, dropout_keep=1.0):
+    feed_dict = {self.is_training_placeholder: is_training,
+                 self.input_placeholder: input_batch,
                  self.dropout_keep_placeholder: dropout_keep}
 
     if not lr is None:
@@ -65,6 +70,7 @@ class R2N2Model(Model):
 
     with tf.variable_scope("R2N2_logit"):
 
+      # reuse = tf.logical_not(self.is_training_placeholder)
       # reshape to merge n_batches, CONST.N_VIEWS
       # because conv2d() function only takes 4D tensor, for 2D convolution
       self.input_placeholder.get_shape()
@@ -128,7 +134,10 @@ class R2N2Model(Model):
 
       n_fc_outputs = 1024
       fc = tf.contrib.layers.fully_connected(inputs=conv5_flattened, num_outputs=n_fc_outputs,
-                                             normalizer_fn=tf.contrib.layers.batch_norm, activation_fn=tf.nn.relu, scope="fc1", reuse=False)
+                                             activation_fn=None, scope="fc1", reuse=False)
+      fc = tf.contrib.layers.batch_norm(fc, center=True, scale=True, is_training=self.is_training_placeholder,
+                                        scope='fc_batch_norm')
+      fc = tf.nn.relu(fc, name='relu')
 
       # reshape back to (batch_size, CONST.N_VIEWS, n_fc_outputs)
       fc = tf.reshape(fc, shape=(-1, self.config.CONST.N_VIEWS, n_fc_outputs))
@@ -196,15 +205,17 @@ class R2N2Model(Model):
     return loss
 
   def add_training_op(self, loss):
-    batch = tf.Variable(0, trainable=False)
-    optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_placeholder)
-    grads_vars = optimizer.compute_gradients(loss)
-    filtered_grads_vars = []
-    for grad, var in grads_vars:
-      if not grad is None:
-        filtered_grads_vars.append((grad, var))
-    grads = [pair[0] for pair in filtered_grads_vars]
-    self.grad_norm = tf.global_norm(grads)
-    self.grads_vars = filtered_grads_vars
-    train_op = optimizer.apply_gradients(filtered_grads_vars, global_step=batch)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+      batch = tf.Variable(0, trainable=False)
+      optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_placeholder)
+      grads_vars = optimizer.compute_gradients(loss)
+      filtered_grads_vars = []
+      for grad, var in grads_vars:
+        if not grad is None:
+          filtered_grads_vars.append((grad, var))
+      grads = [pair[0] for pair in filtered_grads_vars]
+      self.grad_norm = tf.global_norm(grads)
+      self.grads_vars = filtered_grads_vars
+      train_op = optimizer.apply_gradients(filtered_grads_vars, global_step=batch)
     return train_op
