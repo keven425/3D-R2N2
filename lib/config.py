@@ -57,7 +57,7 @@ __C.TRAIN.NUM_RENDERING = 24
 __C.TRAIN.NUM_VALIDATION_ITERATIONS = 24
 __C.TRAIN.VALIDATION_FREQ = 2000
 __C.TRAIN.NAN_CHECK_FREQ = 2000
-__C.TRAIN.RANDOM_NUM_VIEWS = True  # feed in random # views if n_views > 1
+__C.TRAIN.RANDOM_NUM_VIEWS = False  # feed in random # views if n_views > 1
 
 __C.QUEUE_SIZE = 15  # maximum number of minibatches that can be put in a data queue
 
