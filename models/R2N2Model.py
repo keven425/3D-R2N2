@@ -152,11 +152,12 @@ class R2N2Model(Model):
       _, h = cell(fc, tf.zeros(shape=(np.prod(grid_state_size),)))
       # _, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
       shape = [-1] + list(grid_state_size)
-      h = tf.reshape(h, shape=shape) # reshape back to 3d
+      # h = tf.reshape(h, shape=shape) # reshape back to 3d
       h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
 
       # deconvolutional layers
       # 1st deconv layer
+      h = models.unpool_3d.unpool_3d_zero_filled(h)
       deconv11 = tf.layers.conv3d(h, filters=128, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv11", reuse=False)
       deconv12 = tf.layers.conv3d(deconv11, filters=128, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
@@ -164,54 +165,60 @@ class R2N2Model(Model):
       deconv1_res = tf.layers.conv3d(h, filters=128, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv1_res", reuse=False)
       deconv1 = deconv12 + deconv1_res
-      deconv1 = models.unpool_3d.unpool_3d_zero_filled(deconv1)
 
 
       # 2nd deconv layer
-      deconv21 = tf.layers.conv3d(deconv1, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+      deconv1 = models.unpool_3d.unpool_3d_zero_filled(deconv1)
+      deconv21 = tf.layers.conv3d(deconv1, filters=128, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv21", reuse=False)
-      deconv22 = tf.layers.conv3d(deconv21, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+      deconv22 = tf.layers.conv3d(deconv21, filters=128, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv22", reuse=False)
-      deconv2_res = tf.layers.conv3d(deconv1, filters=64, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
+      deconv2_res = tf.layers.conv3d(deconv1, filters=128, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv2_res", reuse=False)
       deconv2 = deconv22 + deconv2_res
-      deconv2 = models.unpool_3d.unpool_3d_zero_filled(deconv2)
 
 
       # 3rd deconv layer
-      deconv31 = tf.layers.conv3d(deconv2, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+      deconv2 = models.unpool_3d.unpool_3d_zero_filled(deconv2)
+      deconv31 = tf.layers.conv3d(deconv2, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv31", reuse=False)
-      deconv32 = tf.layers.conv3d(deconv31, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+      deconv32 = tf.layers.conv3d(deconv31, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv32", reuse=False)
-      deconv3_res = tf.layers.conv3d(deconv2, filters=32, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
+      deconv3_res = tf.layers.conv3d(deconv2, filters=64, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
         activation=tf.nn.relu, use_bias=False, name="deconv3_res", reuse=False)
       deconv3 = deconv32 + deconv3_res
-      deconv3 = models.unpool_3d.unpool_3d_zero_filled(deconv3)
 
+      # 4th deconv layer
+      deconv41 = tf.layers.conv3d(deconv3, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+                                  activation=tf.nn.relu, use_bias=False, name="deconv41", reuse=False)
+      deconv42 = tf.layers.conv3d(deconv41, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+                                  activation=tf.nn.relu, use_bias=False, name="deconv42", reuse=False)
+      deconv4_res = tf.layers.conv3d(deconv3, filters=32, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
+                                     activation=tf.nn.relu, use_bias=False, name="deconv4_res", reuse=False)
+      deconv4 = deconv42 + deconv4_res
 
       # final deconv layer
-      deconv4 = tf.layers.conv3d(deconv3, filters=2, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
+      deconv5 = tf.layers.conv3d(deconv4, filters=2, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
         activation=None, use_bias=False, name="deconv4", reuse=False)
-      deconv4 = tf.Print(deconv4, [tf.reduce_min(deconv4), tf.reduce_max(deconv4), deconv4], message="deconv4")
+      deconv5 = tf.Print(deconv5, [tf.reduce_min(deconv5), tf.reduce_max(deconv5), deconv5], message="deconv5")
 
-    return fc, h, deconv4
+    return fc, h, deconv5
 
   def add_prediction_op(self, logits):
-    fc, h, deconv4 = logits
-    return deconv4
+    fc, h, deconv = logits
+    return deconv
 
   def add_loss_op(self, logits):
-    fc, h, deconv4 = logits
-    self.logits_norm = tf.sqrt(tf.reduce_mean(tf.square(deconv4)))
+    fc, h, deconv = logits
+    self.logits_norm = tf.sqrt(tf.reduce_mean(tf.square(deconv)))
     self.labels_placeholder = tf.Print(self.labels_placeholder, [self.labels_placeholder], message="labels")
-    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=deconv4, labels=self.labels_placeholder)
+    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=deconv, labels=self.labels_placeholder)
     loss = tf.reduce_mean(cross_entropy)
     return loss
 
   def add_training_op(self, loss):
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
-      batch = tf.Variable(0, trainable=False)
       optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_placeholder)
       grads_vars = optimizer.compute_gradients(loss)
       filtered_grads_vars = []
@@ -221,5 +228,5 @@ class R2N2Model(Model):
       grads = [pair[0] for pair in filtered_grads_vars]
       self.grad_norm = tf.global_norm(grads)
       self.grads_vars = filtered_grads_vars
-      train_op = optimizer.apply_gradients(filtered_grads_vars, global_step=batch)
+      train_op = optimizer.apply_gradients(filtered_grads_vars)
     return train_op
