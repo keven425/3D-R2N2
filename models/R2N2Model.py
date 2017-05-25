@@ -147,10 +147,13 @@ class R2N2Model(Model):
       # 3D GRU
       grid_state_size = (4, 4, 4, 128)
       cell = GRU3dCell(fc.shape[-1].value, grid_state_size)
-      assert(fc.get_shape()[-2].value == 1)
-      fc = tf.reshape(fc, shape=(-1, fc.get_shape()[-1].value))
-      _, h = cell(fc, tf.zeros(shape=(np.prod(grid_state_size),)))
-      # _, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
+
+      # # flatten, to test for non recurrent case
+      # assert(fc.get_shape()[-2].value == 1)
+      # fc = tf.reshape(fc, shape=(-1, fc.get_shape()[-1].value))
+      # _, h = cell(fc, tf.zeros(shape=(np.prod(grid_state_size),)))
+
+      _, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
       shape = [-1] + list(grid_state_size)
       h = tf.reshape(h, shape=shape) # reshape back to 3d
       h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
