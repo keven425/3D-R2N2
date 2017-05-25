@@ -96,7 +96,7 @@ class GRU3dCell(tf.contrib.rnn.RNNCell):
             o_t = tf.nn.tanh(tf.einsum('ij,jklmo->iklmo', inputs, W_h) + Uh_h + b_h)
 
             h_t = (1 - u_t) * _state + u_t * o_t
-            # h_t = tf.reshape(h_t, shape=(-1, self.state_size))
+            h_t = tf.reshape(h_t, shape=(-1, self.state_size))
             new_state = h_t
 
         # For a GRU, the output and state are the same (N.B. this isn't true

@@ -152,7 +152,7 @@ class R2N2Model(Model):
       _, h = cell(fc, tf.zeros(shape=(np.prod(grid_state_size),)))
       # _, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
       shape = [-1] + list(grid_state_size)
-      # h = tf.reshape(h, shape=shape) # reshape back to 3d
+      h = tf.reshape(h, shape=shape) # reshape back to 3d
       h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
 
       # deconvolutional layers
