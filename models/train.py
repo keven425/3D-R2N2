@@ -122,7 +122,7 @@ def train(train_queue, val_queue=None):
             # Main training loop
             for train_ind in range(start_iter, cfg.TRAIN.NUM_ITERATION + 1):
                 data_timer.tic()
-                batch_img, batch_voxel = train_queue.get()
+                batch_img, batch_voxel, batch_pose = train_queue.get()
                 data_timer.toc()
 
                 # if self.net.is_x_tensor4:
@@ -135,9 +135,9 @@ def train(train_queue, val_queue=None):
 
                 # Apply one gradient step
                 train_timer.tic()
-                loss, grad_norm, learning_rate, logits_norm, grads_vars = model.train_on_batch(session, batch_img, batch_voxel, lr)
+                loss, grad_norm, learning_rate, logits_label_norm, logits_pose_norm, grads_vars = model.train_on_batch(session, batch_img, batch_voxel, batch_pose, lr)
                 train_timer.toc()
-                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm: %f' % (loss, grad_norm, learning_rate, logits_norm))
+                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm_label: %f, logitsnorm_pose: %f' % (loss, grad_norm, learning_rate, logits_label_norm, logits_pose_norm))
 
                 training_losses.append(loss)
 
@@ -148,15 +148,18 @@ def train(train_queue, val_queue=None):
                     # Print the current loss
                     print('%s Iter: %d Loss: %f' % (datetime.now(), train_ind, loss))
 
-                if train_ind % cfg.TRAIN.VALIDATION_FREQ == 0 and val_queue is not None:
+                # if train_ind % cfg.TRAIN.VALIDATION_FREQ == 0 and val_queue is not None:
+                if val_queue is not None:
                     print('validating ...')
                     # Print test loss and params to check convergence every N iterations
                     ious = []
+                    pose_rmses = []
                     for i in range(cfg.TRAIN.NUM_VALIDATION_ITERATIONS):
-                        batch_img, batch_voxel = val_queue.get()
-                        iou = model.evaluate_on_batch(session, batch_img, batch_voxel)
-                        ious.append(np.mean(iou))
-                    print('%s Validation IoU: %f' % (datetime.now(), np.mean(ious)))
+                        batch_img, batch_voxel, batch_pose = val_queue.get()
+                        iou, pose_rmse = model.evaluate_on_batch(session, batch_img, batch_voxel, batch_pose)
+                        ious.append(iou)
+                        pose_rmses.append(pose_rmse)
+                    print('%s Validation IoU: %f, pose RMSE: %f' % (datetime.now(), np.mean(ious), np.mean(pose_rmse)))
 
                 if train_ind % cfg.TRAIN.SAVE_FREQ == 0 and not train_ind == 0:
                     model.save(saver, session)

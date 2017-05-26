@@ -11,7 +11,7 @@ from multiprocessing import Process, Event
 
 from lib.config import cfg
 from lib.data_augmentation import preprocess_img
-from lib.data_io import get_voxel_file, get_rendering_file
+from lib.data_io import get_voxel_file, get_rendering_file, get_pose_file, get_images_list
 from lib.binvox_rw import read_as_3d_array
 
 
@@ -133,11 +133,16 @@ class ReconstructionDataProcess(DataProcess):
                 (self.batch_size, curr_n_views, img_h, img_w, 3), dtype=np.float32)
             batch_voxel = np.zeros(
                 (self.batch_size, n_vox, n_vox, n_vox), dtype=np.int32)
+            batch_pose = np.zeros(
+                (self.batch_size, curr_n_views, 3), dtype=np.float32)
 
             # load each data instance
             for batch_id, db_ind in enumerate(db_inds):
                 category, model_id = self.data_paths[db_ind]
-                image_ids = np.random.choice(cfg.TRAIN.NUM_RENDERING, curr_n_views)
+                # read pose data: azimuth, elevation, in-plane rotation, focal length, distance
+                # find poses closest together
+                image_ids, poses = self.find_images_close_poses(category, model_id, curr_n_views)
+                # image_ids = np.random.choice(cfg.TRAIN.NUM_RENDERING, curr_n_views)
 
                 # load multi view images
                 for view_id, image_id in enumerate(image_ids):
@@ -150,8 +155,10 @@ class ReconstructionDataProcess(DataProcess):
 
                 batch_voxel[batch_id, :, :, :] = (voxel_data == True).astype(np.int32)
 
+                batch_pose[batch_id, :] = np.array(poses)
+
             # The following will wait until the queue frees
-            self.data_queue.put((batch_img, batch_voxel), block=True)
+            self.data_queue.put((batch_img, batch_voxel, batch_pose), block=True)
 
         print('Exiting')
 
@@ -168,6 +175,56 @@ class ReconstructionDataProcess(DataProcess):
             voxel = read_as_3d_array(f)
 
         return voxel
+
+    def find_images_close_poses(self, category, model_id, n_views):
+        poses, images = self.load_poses_images(category, model_id)
+        _images = [images[0]]
+        _poses = [self.extract_pose(poses[0])]
+        _pose = poses[0]
+        _azimuth = _pose[0] # 0 .. 360
+        del poses[0]
+        del images[0]
+
+        i = 0
+        while len(_images) < n_views:
+            _azimuth2 = poses[i][0]
+            if self.close_circular(_azimuth, _azimuth2):
+                _images.append(images[i])
+                pose = self.extract_pose(poses[i])
+                _poses.append(pose)
+                _azimuth = _azimuth2
+                del images[i]
+                del poses[i]
+                if i >= len(images):
+                    i = 0
+            else:
+                i = (i + 1) % len(poses)
+        assert(len(poses) == len(images))
+        assert (len(_poses) == n_views)
+        assert (len(_poses) == len(_images))
+        return _images, _poses
+
+    def extract_pose(self, pose):
+        azimuth = pose[0] / cfg.max_azimuth_diff  # normalize to avoid crowding out other loss
+        elevation = pose[1] / cfg.max_azimuth_diff  # normalize. same reason as above
+        distance = pose[3]
+        return [azimuth, elevation, distance]
+
+    def close_circular(self, _azimuth, _azimuth2):
+        diff = np.abs(_azimuth2 - _azimuth)
+        if diff < cfg.max_azimuth_diff:
+            return True
+        if diff > 180:
+            return np.abs(diff - 360) < cfg.max_azimuth_diff
+        return False
+
+    def load_poses_images(self, category, model_id):
+        with open(get_pose_file(category, model_id)) as f:
+            _poses = f.read().splitlines()
+            poses = [[float(_) for _ in pose.split(' ')] for pose in _poses]
+        images = list(range(cfg.TRAIN.NUM_RENDERING))
+        assert(len(poses) == len(images))
+        return poses, images
 
 
 def kill_processes(queue, processes):

@@ -21,7 +21,7 @@ class R2N2Model(Model):
 
     self.build()
 
-  def train_on_batch(self, sess, input_batch, labels_batch, lr):
+  def train_on_batch(self, sess, input_batch, labels_batch, poses_batch, lr):
     """Perform one step of gradient descent on the provided batch of data.
 
     Args:
@@ -32,31 +32,38 @@ class R2N2Model(Model):
     feed = self.create_feed_dict(is_training=True,
                                  input_batch=input_batch,
                                  labels_batch=labels_batch,
+                                 poses_batch=poses_batch,
                                  lr=lr,
                                  dropout_keep=self.config.dropout_keep)
-    _, loss, grad_norm, learning_rate, logits_norm, grads_vars = sess.run(
-      [self.train_op, self.loss, self.grad_norm, self.learning_rate_placeholder, self.logits_norm, self.grads_vars], feed_dict=feed)
-    return loss, grad_norm, learning_rate, logits_norm, grads_vars
+    _, loss, grad_norm, learning_rate, logits_label_norm, logits_pose_norm, grads_vars = sess.run(
+      [self.train_op, self.loss, self.grad_norm, self.learning_rate_placeholder, self.logits_label_norm, self.logits_pose_norm, self.grads_vars], feed_dict=feed)
+    return loss, grad_norm, learning_rate, logits_label_norm, logits_pose_norm, grads_vars
 
-  def evaluate_on_batch(self, sess, input_batch, labels_batch):
+  def evaluate_on_batch(self, sess, input_batch, labels_batch, poses_batch):
     feed = self.create_feed_dict(is_training=False,
                                  input_batch=input_batch,
-                                 labels_batch=labels_batch)
+                                 labels_batch=labels_batch,
+                                 poses_batch=poses_batch)
     pred, loss = sess.run([self.pred, self.loss], feed_dict=feed)  # pick the class that has highest probability
+    pose_pred, vox_pred = pred
     thresh = self.config.TEST.VOXEL_THRESH[0]
-    metrics = lib.voxel.evaluate_voxel_prediction(pred, labels_batch, thresh)
-    return metrics
+    iou = lib.voxel.evaluate_voxel_prediction(vox_pred, labels_batch, thresh)
+    poses_label = poses_batch[:, 1:] - poses_batch[:, :-1]
+    pose_rmse = np.mean(np.linalg.norm(poses_label - pose_pred, axis=-1))
+    return iou, pose_rmse
 
   def add_placeholders(self):
     self.is_training_placeholder = tf.placeholder(tf.bool, shape=())
     self.input_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.CONST.N_VIEWS, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
     self.labels_placeholder = tf.placeholder(tf.int32, shape=(None, self.config.CONST.N_VOX, self.config.CONST.N_VOX, self.config.CONST.N_VOX))
+    self.poses_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.CONST.N_VIEWS, 3))
     self.dropout_keep_placeholder = tf.placeholder(tf.float32)
     self.learning_rate_placeholder = tf.placeholder(tf.float32)
 
-  def create_feed_dict(self, is_training, input_batch, labels_batch=None, lr=None, dropout_keep=1.0):
+  def create_feed_dict(self, is_training, input_batch, labels_batch=None, poses_batch=None, lr=None, dropout_keep=1.0):
     feed_dict = {self.is_training_placeholder: is_training,
                  self.input_placeholder: input_batch,
+                 self.poses_placeholder: poses_batch,
                  self.dropout_keep_placeholder: dropout_keep}
 
     if not lr is None:
@@ -153,10 +160,25 @@ class R2N2Model(Model):
       # fc = tf.reshape(fc, shape=(-1, fc.get_shape()[-1].value))
       # _, h = cell(fc, tf.zeros(shape=(np.prod(grid_state_size),)))
 
-      _, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
+      states, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
       shape = [-1] + list(grid_state_size)
       h = tf.reshape(h, shape=shape) # reshape back to 3d
       h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
+
+      # predict pose delta
+      delta_states = states[:,1:] - states[:,:-1]
+      d_states_size = delta_states.get_shape()[-1].value
+      W_dfc1 = tf.get_variable("W_dfc1", shape=(d_states_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      b_dfc1 = tf.get_variable("b_dfc1", shape=128, dtype=np.float32)
+      fc_delta = tf.einsum('ijk,kl->ijl', delta_states, W_dfc1) + b_dfc1
+      fc_delta = tf.nn.relu(fc_delta)
+      fc_delta = tf.Print(fc_delta, [tf.reduce_min(fc_delta), tf.reduce_max(fc_delta), fc_delta], message="fc_delta")
+      W_dfc2 = tf.get_variable("W_dfc2", shape=(128, 3), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      b_dfc2 = tf.get_variable("b_dfc2", shape=3, dtype=np.float32)
+      delta_poses = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2) + b_dfc2
+      delta_poses = tf.nn.relu(delta_poses)
+      delta_poses = tf.Print(delta_poses, [tf.reduce_min(delta_poses), tf.reduce_max(delta_poses), delta_poses], message="delta_poses")
+
 
       # deconvolutional layers
       # 1st deconv layer
@@ -205,18 +227,30 @@ class R2N2Model(Model):
         activation=None, use_bias=False, name="deconv4", reuse=False)
       deconv5 = tf.Print(deconv5, [tf.reduce_min(deconv5), tf.reduce_max(deconv5), deconv5], message="deconv5")
 
-    return fc, h, deconv5
+    return delta_poses, deconv5
 
   def add_prediction_op(self, logits):
-    fc, h, deconv = logits
-    return deconv
+    delta_poses, deconv = logits
+    return (delta_poses, deconv)
 
   def add_loss_op(self, logits):
-    fc, h, deconv = logits
-    self.logits_norm = tf.sqrt(tf.reduce_mean(tf.square(deconv)))
+    delta_poses, deconv = logits
+    self.logits_label_norm = tf.sqrt(tf.reduce_mean(tf.square(deconv)))
+    self.logits_pose_norm = tf.sqrt(tf.reduce_mean(tf.square(delta_poses)))
     self.labels_placeholder = tf.Print(self.labels_placeholder, [self.labels_placeholder], message="labels")
-    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=deconv, labels=self.labels_placeholder)
-    loss = tf.reduce_mean(cross_entropy)
+
+    cross_entropy_label = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=deconv, labels=self.labels_placeholder)
+    loss_label = tf.reduce_mean(cross_entropy_label)
+    loss_label = tf.Print(loss_label, [loss_label], message="loss_label")
+
+    delta_poses_label = self.poses_placeholder[:,1:] - self.poses_placeholder[:,:-1]
+    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:,:,0]), tf.reduce_max(delta_poses_label[:,:,0])], message="azimuth label")
+    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:, :, 1]), tf.reduce_max(delta_poses_label[:, :, 1])], message="elevation label")
+    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:, :, 2]), tf.reduce_max(delta_poses_label[:, :, 2])], message="distance label")
+    rmse_pose = tf.sqrt(tf.reduce_mean(tf.square(delta_poses - delta_poses_label)))
+    rmse_pose = tf.Print(rmse_pose, [rmse_pose], message="rmse_pose")
+
+    loss = loss_label + rmse_pose
     return loss
 
   def add_training_op(self, loss):
