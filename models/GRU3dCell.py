@@ -35,8 +35,8 @@ class GRU3dCell(tf.contrib.rnn.RNNCell):
         """Updates the state using the previous @state and @inputs.
 
         Args:
-            inputs: (None, scalar)
-            state: (None, N, N, N, n_h)
+            inputs.shape: (None, scalar)
+            state.shape: (None, N, N, N, n_h)
             scope: is the name of the scope to be used when defining the variables inside.
         Returns:
             a pair of the output vector and the new state vector.
