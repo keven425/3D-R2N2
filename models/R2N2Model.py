@@ -193,11 +193,11 @@ class R2N2Model(Model):
 
       # 4th deconv layer
       deconv41 = tf.layers.conv3d(deconv3, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
-                                  activation=tf.nn.relu, use_bias=False, name="deconv41", reuse=False)
+        activation=tf.nn.relu, use_bias=False, name="deconv41", reuse=False)
       deconv42 = tf.layers.conv3d(deconv41, filters=32, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
-                                  activation=tf.nn.relu, use_bias=False, name="deconv42", reuse=False)
+        activation=tf.nn.relu, use_bias=False, name="deconv42", reuse=False)
       deconv4_res = tf.layers.conv3d(deconv3, filters=32, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
-                                     activation=tf.nn.relu, use_bias=False, name="deconv4_res", reuse=False)
+        activation=tf.nn.relu, use_bias=False, name="deconv4_res", reuse=False)
       deconv4 = deconv42 + deconv4_res
 
       # final deconv layer
