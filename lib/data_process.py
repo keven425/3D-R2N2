@@ -180,9 +180,10 @@ class ReconstructionDataProcess(DataProcess):
         poses, images = self.load_poses_images(category, model_id)
         poses_sorted, images_sorted = zip(*sorted(zip(poses, images))) # sort based on poses
 
-        start = np.random.randint(0, cfg.TRAIN.NUM_RENDERING - cfg.CONST.N_VIEWS)
-        _images = images_sorted[start:start + cfg.CONST.N_VIEWS]
-        _poses = poses_sorted[start:start + cfg.CONST.N_VIEWS]
+        n_views_long = (cfg.CONST.N_VIEWS - 1) * cfg.sample_every + 1
+        start = np.random.randint(0, cfg.TRAIN.NUM_RENDERING - n_views_long)
+        _images = images_sorted[start:start + n_views_long:cfg.sample_every]
+        _poses = poses_sorted[start:start + n_views_long:cfg.sample_every]
         # reverse by random
         if np.random.random() > 0.5:
             _poses, _images = zip(*reversed(list(zip(_poses, _images))))
@@ -197,14 +198,6 @@ class ReconstructionDataProcess(DataProcess):
         elevation = pose[1] / avg_diff  # normalize. same reason as above
         distance = pose[3]
         return [azimuth, elevation, distance]
-
-    def close_circular(self, _azimuth, _azimuth2):
-        diff = np.abs(_azimuth2 - _azimuth)
-        if diff < cfg.max_azimuth_diff:
-            return True
-        if diff > 180:
-            return np.abs(diff - 360) < cfg.max_azimuth_diff
-        return False
 
     def load_poses_images(self, category, model_id):
         with open(get_pose_file(category, model_id)) as f:

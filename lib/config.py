@@ -25,7 +25,7 @@ __C.CONST.BATCH_SIZE = 2 # TODO: change back
 # __C.CONST.NETWORK_CLASS = 'ResidualGRUNet'
 __C.CONST.WEIGHTS = ''  # when set, load the weights from the file
 __C.dropout_keep = 1.0
-__C.max_azimuth_diff = 45.0 # azimuth max 45 degrees apart between two views
+__C.sample_every = 1
 
 #
 # Directories
