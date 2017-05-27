@@ -184,7 +184,8 @@ class ReconstructionDataProcess(DataProcess):
         _images = images_sorted[start:start + cfg.CONST.N_VIEWS]
         _poses = poses_sorted[start:start + cfg.CONST.N_VIEWS]
         # reverse by random
-        _poses, _images = zip(*reversed(list(zip(_poses, _images))))
+        if np.random.random() > 0.5:
+            _poses, _images = zip(*reversed(list(zip(_poses, _images))))
         _poses = [self.extract_pose(pose) for pose in _poses]
         assert (len(_poses) == n_views)
         assert (len(_poses) == len(_images))
