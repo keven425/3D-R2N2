@@ -244,9 +244,9 @@ class R2N2Model(Model):
     loss_label = tf.Print(loss_label, [loss_label], message="loss_label")
 
     delta_poses_label = self.poses_placeholder[:,1:] - self.poses_placeholder[:,:-1]
-    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:,:,0]), tf.reduce_max(delta_poses_label[:,:,0])], message="azimuth label")
-    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:, :, 1]), tf.reduce_max(delta_poses_label[:, :, 1])], message="elevation label")
-    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:, :, 2]), tf.reduce_max(delta_poses_label[:, :, 2])], message="distance label")
+    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:,:,0]), tf.reduce_max(delta_poses_label[:,:,0])], message="delta azimuth label")
+    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:, :, 1]), tf.reduce_max(delta_poses_label[:, :, 1])], message="delta elevation label")
+    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:, :, 2]), tf.reduce_max(delta_poses_label[:, :, 2])], message="delta distance label")
     rmse_pose = tf.sqrt(tf.reduce_mean(tf.square(delta_poses - delta_poses_label)))
     rmse_pose = tf.Print(rmse_pose, [rmse_pose], message="rmse_pose")
 

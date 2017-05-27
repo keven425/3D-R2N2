@@ -178,35 +178,22 @@ class ReconstructionDataProcess(DataProcess):
 
     def find_images_close_poses(self, category, model_id, n_views):
         poses, images = self.load_poses_images(category, model_id)
-        _images = [images[0]]
-        _poses = [self.extract_pose(poses[0])]
-        _pose = poses[0]
-        _azimuth = _pose[0] # 0 .. 360
-        del poses[0]
-        del images[0]
+        poses_sorted, images_sorted = zip(*sorted(zip(poses, images))) # sort based on poses
 
-        i = 0
-        while len(_images) < n_views:
-            _azimuth2 = poses[i][0]
-            if self.close_circular(_azimuth, _azimuth2):
-                _images.append(images[i])
-                pose = self.extract_pose(poses[i])
-                _poses.append(pose)
-                _azimuth = _azimuth2
-                del images[i]
-                del poses[i]
-                if i >= len(images):
-                    i = 0
-            else:
-                i = (i + 1) % len(poses)
-        assert(len(poses) == len(images))
+        start = np.random.randint(0, cfg.TRAIN.NUM_RENDERING - cfg.CONST.N_VIEWS)
+        _images = images_sorted[start:start + cfg.CONST.N_VIEWS]
+        _poses = poses_sorted[start:start + cfg.CONST.N_VIEWS]
+        # reverse by random
+        _poses, _images = zip(*reversed(list(zip(_poses, _images))))
+        _poses = [self.extract_pose(pose) for pose in _poses]
         assert (len(_poses) == n_views)
         assert (len(_poses) == len(_images))
         return _images, _poses
 
     def extract_pose(self, pose):
-        azimuth = pose[0] / cfg.max_azimuth_diff  # normalize to avoid crowding out other loss
-        elevation = pose[1] / cfg.max_azimuth_diff  # normalize. same reason as above
+        avg_diff = 360. * 2 / cfg.TRAIN.NUM_RENDERING
+        azimuth = pose[0] / avg_diff  # normalize to avoid crowding out other loss
+        elevation = pose[1] / avg_diff  # normalize. same reason as above
         distance = pose[3]
         return [azimuth, elevation, distance]
 
