@@ -134,7 +134,7 @@ class ReconstructionDataProcess(DataProcess):
             batch_voxel = np.zeros(
                 (self.batch_size, n_vox, n_vox, n_vox), dtype=np.int32)
             batch_pose = np.zeros(
-                (self.batch_size, curr_n_views, 3), dtype=np.float32)
+                (self.batch_size, curr_n_views, 3), dtype=np.int32)
 
             # load each data instance
             for batch_id, db_ind in enumerate(db_inds):
@@ -193,10 +193,9 @@ class ReconstructionDataProcess(DataProcess):
         return _images, _poses
 
     def extract_pose(self, pose):
-        avg_diff = 360. * 2 / cfg.TRAIN.NUM_RENDERING
-        azimuth = pose[0] / avg_diff  # normalize to avoid crowding out other loss
-        elevation = pose[1] / avg_diff  # normalize. same reason as above
-        distance = pose[3]
+        azimuth = int(pose[0]) # normalize to avoid crowding out other loss
+        elevation = int(pose[1]) # normalize. same reason as above
+        distance = int(pose[3] * 100)
         return [azimuth, elevation, distance]
 
     def load_poses_images(self, category, model_id):

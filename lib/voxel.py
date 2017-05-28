@@ -1,10 +1,11 @@
 import numpy as np
+import lib.eval
 
 
 def evaluate_voxel_prediction(preds, ground_truth, thresh):
     # preds.shape: (batch_size, 32, 32, 32, 2)
     # preds is log prob. convert to prob first
-    probs = softmax(preds)
+    probs = lib.eval.softmax(preds)
     occupy = probs[:, :, :, :, 1] >= thresh
     # diff = np.sum(np.logical_xor(occupy, ground_truth))
     intersection = np.sum(np.logical_and(occupy, ground_truth), axis=(1, 2, 3))
@@ -16,14 +17,6 @@ def evaluate_voxel_prediction(preds, ground_truth, thresh):
     # n_false_pos = np.sum(np.logical_and(occupy, ground_truth[:, 0, :, :]))  # false positive
     # n_false_neg = np.sum(np.logical_and(np.logical_not(occupy), ground_truth[:, 1, :, :]))  # false negative
     # return np.array([iou, diff, intersection, union, n_false_pos, n_false_neg])
-
-def softmax(voxel):
-    # voxel.shape: (batch_size, 32, 32, 32, 2)
-    # contains log probabiliy
-    _shape = list(voxel.shape[:-1]) + [1]
-    _max = np.max(voxel, axis=-1).reshape(_shape)
-    e_x = np.exp(voxel - _max)
-    return e_x / e_x.sum(axis=-1).reshape(_shape)
 
 def voxel2mesh(voxels):
     cube_verts = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0],

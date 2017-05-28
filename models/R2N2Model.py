@@ -6,6 +6,8 @@ from models.GRU3dCell import GRU3dCell
 import models.unpool_3d
 
 import lib.voxel
+import lib.eval
+
 
 class R2N2Model(Model):
 
@@ -35,9 +37,9 @@ class R2N2Model(Model):
                                  poses_batch=poses_batch,
                                  lr=lr,
                                  dropout_keep=self.config.dropout_keep)
-    _, loss, grad_norm, learning_rate, logits_label_norm, logits_pose_norm, grads_vars = sess.run(
-      [self.train_op, self.loss, self.grad_norm, self.learning_rate_placeholder, self.logits_label_norm, self.logits_pose_norm, self.grads_vars], feed_dict=feed)
-    return loss, grad_norm, learning_rate, logits_label_norm, logits_pose_norm, grads_vars
+    _, loss, grad_norm, learning_rate, logits_label_norm, grads_vars = sess.run(
+      [self.train_op, self.loss, self.grad_norm, self.learning_rate_placeholder, self.logits_label_norm, self.grads_vars], feed_dict=feed)
+    return loss, grad_norm, learning_rate, logits_label_norm, grads_vars
 
   def evaluate_on_batch(self, sess, input_batch, labels_batch, poses_batch):
     feed = self.create_feed_dict(is_training=False,
@@ -45,18 +47,25 @@ class R2N2Model(Model):
                                  labels_batch=labels_batch,
                                  poses_batch=poses_batch)
     pred, loss = sess.run([self.pred, self.loss], feed_dict=feed)  # pick the class that has highest probability
-    pose_pred, vox_pred = pred
+    delta_az_pred, delta_el_pred, delta_di_pred, vox_pred = pred
     thresh = self.config.TEST.VOXEL_THRESH[0]
     iou = lib.voxel.evaluate_voxel_prediction(vox_pred, labels_batch, thresh)
-    poses_label = poses_batch[:, 1:] - poses_batch[:, :-1]
-    pose_rmse = np.mean(np.linalg.norm(poses_label - pose_pred, axis=-1))
-    return iou, pose_rmse
+    delta_poses_label = poses_batch[:, 1:] - poses_batch[:, :-1]
+
+    delta_az_label = delta_poses_label[:, :, 0] + 360  # make start at 0
+    delta_el_label = delta_poses_label[:, :, 1] + 360  # make start at 0
+    delta_di_label = delta_poses_label[:, :, 2] + 100  # make start at 0
+    ce_az = lib.eval.cross_entropy_batch(delta_az_pred, delta_az_label)
+    ce_el = lib.eval.cross_entropy_batch(delta_el_pred, delta_el_label)
+    ce_di = lib.eval.cross_entropy_batch(delta_di_pred, delta_di_label)
+
+    return iou, ce_az, ce_el, ce_di
 
   def add_placeholders(self):
     self.is_training_placeholder = tf.placeholder(tf.bool, shape=())
     self.input_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.CONST.N_VIEWS, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
     self.labels_placeholder = tf.placeholder(tf.int32, shape=(None, self.config.CONST.N_VOX, self.config.CONST.N_VOX, self.config.CONST.N_VOX))
-    self.poses_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.CONST.N_VIEWS, 3))
+    self.poses_placeholder = tf.placeholder(tf.int32, shape=(None, self.config.CONST.N_VIEWS, 3))
     self.dropout_keep_placeholder = tf.placeholder(tf.float32)
     self.learning_rate_placeholder = tf.placeholder(tf.float32)
 
@@ -166,19 +175,28 @@ class R2N2Model(Model):
       h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
 
       # predict pose delta
-      delta_states = states[:,1:] - states[:,:-1]
-      d_states_size = delta_states.get_shape()[-1].value
-      W_dfc1 = tf.get_variable("W_dfc1", shape=(d_states_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      states_concat = tf.concat([states[:,1:], states[:,:-1]], axis=-1)
+      states_concat_size = states_concat.get_shape()[-1].value
+      W_dfc1 = tf.get_variable("W_dfc1", shape=(states_concat_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
       b_dfc1 = tf.get_variable("b_dfc1", shape=128, dtype=np.float32)
-      fc_delta = tf.einsum('ijk,kl->ijl', delta_states, W_dfc1) + b_dfc1
+      fc_delta = tf.einsum('ijk,kl->ijl', states_concat, W_dfc1) + b_dfc1
       fc_delta = tf.nn.relu(fc_delta)
       fc_delta = tf.Print(fc_delta, [tf.reduce_min(fc_delta), tf.reduce_max(fc_delta), fc_delta], message="fc_delta")
-      W_dfc2 = tf.get_variable("W_dfc2", shape=(128, 3), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
-      b_dfc2 = tf.get_variable("b_dfc2", shape=3, dtype=np.float32)
-      delta_poses = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2) + b_dfc2
-      delta_poses = tf.nn.relu(delta_poses)
-      delta_poses = tf.Print(delta_poses, [tf.reduce_min(delta_poses), tf.reduce_max(delta_poses), tf.reduce_mean(delta_poses), delta_poses], message="delta_poses")
-
+      # azimuth
+      W_dfc2_az = tf.get_variable("W_dfc2_az", shape=(128, 720), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      b_dfc2_az = tf.get_variable("b_dfc2_az", shape=720, dtype=np.float32)
+      delta_az = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2_az) + b_dfc2_az
+      delta_az = tf.Print(delta_az, [tf.reduce_min(delta_az), tf.reduce_max(delta_az), tf.reduce_mean(delta_az), delta_az], message="delta_az")
+      # elevation
+      W_dfc2_el = tf.get_variable("W_dfc2_el", shape=(128, 720), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      b_dfc2_el = tf.get_variable("b_dfc2_el", shape=720, dtype=np.float32)
+      delta_el = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2_el) + b_dfc2_el
+      delta_el = tf.Print(delta_el, [tf.reduce_min(delta_el), tf.reduce_max(delta_el), tf.reduce_mean(delta_el), delta_el], message="delta_el")
+      # distance
+      W_dfc2_d = tf.get_variable("W_dfc2_d", shape=(128, 200), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      b_dfc2_d = tf.get_variable("b_dfc2_d", shape=200, dtype=np.float32)
+      delta_di = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2_d) + b_dfc2_d
+      delta_di = tf.Print(delta_di, [tf.reduce_min(delta_di), tf.reduce_max(delta_di), tf.reduce_mean(delta_di), delta_di], message="delta_di")
 
       # deconvolutional layers
       # 1st deconv layer
@@ -227,30 +245,41 @@ class R2N2Model(Model):
         activation=None, use_bias=False, name="deconv4", reuse=False)
       deconv5 = tf.Print(deconv5, [tf.reduce_min(deconv5), tf.reduce_max(deconv5), deconv5], message="deconv5")
 
-    return delta_poses, deconv5
+    return delta_az, delta_el, delta_di, deconv5
 
   def add_prediction_op(self, logits):
-    delta_poses, deconv = logits
-    return (delta_poses, deconv)
+    return logits
 
   def add_loss_op(self, logits):
-    delta_poses, deconv = logits
+    delta_az, delta_el, delta_di, deconv = logits
+
     self.logits_label_norm = tf.sqrt(tf.reduce_mean(tf.square(deconv)))
-    self.logits_pose_norm = tf.sqrt(tf.reduce_mean(tf.square(delta_poses)))
     self.labels_placeholder = tf.Print(self.labels_placeholder, [self.labels_placeholder], message="labels")
 
-    cross_entropy_label = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=deconv, labels=self.labels_placeholder)
-    loss_label = tf.reduce_mean(cross_entropy_label)
+    # compute voxel loss
+    ce_label = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=deconv, labels=self.labels_placeholder)
+    loss_label = tf.reduce_mean(ce_label)
     loss_label = tf.Print(loss_label, [loss_label], message="loss_label")
 
+    # compute poses loss
     delta_poses_label = self.poses_placeholder[:,1:] - self.poses_placeholder[:,:-1]
-    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:,:,0]), tf.reduce_max(delta_poses_label[:,:,0])], message="delta azimuth label")
-    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:, :, 1]), tf.reduce_max(delta_poses_label[:, :, 1])], message="delta elevation label")
-    delta_poses_label = tf.Print(delta_poses_label, [tf.reduce_min(delta_poses_label[:, :, 2]), tf.reduce_max(delta_poses_label[:, :, 2])], message="delta distance label")
-    rmse_pose = tf.sqrt(tf.reduce_mean(tf.square(delta_poses - delta_poses_label)))
-    rmse_pose = tf.Print(rmse_pose, [rmse_pose], message="rmse_pose")
+    delta_az_label = delta_poses_label[:, :, 0] + 360 # make start at 0
+    delta_el_label = delta_poses_label[:, :, 1] + 360 # make start at 0
+    delta_di_label = delta_poses_label[:, :, 2] + 100 # make start at 0
+    delta_az_label = tf.Print(delta_az_label, [tf.reduce_min(delta_az_label), tf.reduce_max(delta_az_label)], message="delta azimuth label")
+    delta_el_label = tf.Print(delta_el_label, [tf.reduce_min(delta_el_label), tf.reduce_max(delta_el_label)], message="delta elevation label")
+    delta_di_label = tf.Print(delta_di_label, [tf.reduce_min(delta_di_label), tf.reduce_max(delta_di_label)], message="delta distance label")
+    ce_az = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=delta_az, labels=delta_az_label)
+    ce_el = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=delta_el, labels=delta_el_label)
+    ce_di = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=delta_di, labels=delta_di_label)
+    loss_az = tf.reduce_mean(ce_az)
+    loss_el = tf.reduce_mean(ce_el)
+    loss_di = tf.reduce_mean(ce_di)
+    loss_az = tf.Print(loss_az, [loss_az], message="loss_az")
+    loss_el = tf.Print(loss_el, [loss_el], message="loss_el")
+    loss_di = tf.Print(loss_di, [loss_di], message="loss_di")
 
-    loss = loss_label + rmse_pose
+    loss = loss_label + loss_az + loss_el + loss_di
     return loss
 
   def add_training_op(self, loss):

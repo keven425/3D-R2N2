@@ -135,9 +135,9 @@ def train(train_queue, val_queue=None):
 
                 # Apply one gradient step
                 train_timer.tic()
-                loss, grad_norm, learning_rate, logits_label_norm, logits_pose_norm, grads_vars = model.train_on_batch(session, batch_img, batch_voxel, batch_pose, lr)
+                loss, grad_norm, learning_rate, logits_label_norm, grads_vars = model.train_on_batch(session, batch_img, batch_voxel, batch_pose, lr)
                 train_timer.toc()
-                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm_label: %f, logitsnorm_pose: %f' % (loss, grad_norm, learning_rate, logits_label_norm, logits_pose_norm))
+                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm_label: %f' % (loss, grad_norm, learning_rate, logits_label_norm))
 
                 training_losses.append(loss)
 
@@ -152,13 +152,17 @@ def train(train_queue, val_queue=None):
                     print('validating ...')
                     # Print test loss and params to check convergence every N iterations
                     ious = []
-                    pose_rmses = []
+                    ces_az = []
+                    ces_el = []
+                    ces_di = []
                     for i in range(cfg.TRAIN.NUM_VALIDATION_ITERATIONS):
                         batch_img, batch_voxel, batch_pose = val_queue.get()
-                        iou, pose_rmse = model.evaluate_on_batch(session, batch_img, batch_voxel, batch_pose)
+                        iou, ce_az, ce_el, ce_di = model.evaluate_on_batch(session, batch_img, batch_voxel, batch_pose)
                         ious.append(iou)
-                        pose_rmses.append(pose_rmse)
-                    print('%s Validation IoU: %f, pose RMSE: %f' % (datetime.now(), np.mean(ious), np.mean(pose_rmse)))
+                        ces_az.append(ce_az)
+                        ces_el.append(ce_el)
+                        ces_di.append(ce_di)
+                        print('%s Validation IoU: %f, ce_azimuth: %f, ce_elevation: %f, ce_distance: %f' % (datetime.now(), np.mean(ious), np.mean(ces_az), np.mean(ces_el), np.mean(ces_di)))
 
                 if train_ind % cfg.TRAIN.SAVE_FREQ == 0 and not train_ind == 0:
                     model.save(saver, session)
