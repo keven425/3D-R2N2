@@ -51,6 +51,12 @@ def parse_args():
         default=cfg.CONST.BATCH_SIZE,
         type=int)
     parser.add_argument(
+      '--views',
+      dest='n_views',
+      help='n views to use',
+      default=cfg.CONST.N_VIEWS,
+      type=int)
+    parser.add_argument(
         '--sample-every',
         dest='sample_every',
         help='sample every n frames',
@@ -104,6 +110,8 @@ def main():
 
     if args.batch_size is not None:
         cfg_from_list(['CONST.BATCH_SIZE', args.batch_size])
+    if args.n_views is not None:
+        cfg_from_list(['CONST.N_VIEWS', args.n_views])
     if args.sample_every is not None:
         cfg_from_list(['sample_every', args.sample_every])
     if args.iter is not None:
