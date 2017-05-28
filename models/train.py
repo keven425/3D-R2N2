@@ -162,7 +162,7 @@ def train(train_queue, val_queue=None):
                         ces_az.append(ce_az)
                         ces_el.append(ce_el)
                         ces_di.append(ce_di)
-                        print('%s Validation IoU: %f, ce_azimuth: %f, ce_elevation: %f, ce_distance: %f' % (datetime.now(), np.mean(ious), np.mean(ces_az), np.mean(ces_el), np.mean(ces_di)))
+                    print('%s Validation IoU: %f, ce_azimuth: %f, ce_elevation: %f, ce_distance: %f' % (datetime.now(), np.mean(ious), np.mean(ces_az), np.mean(ces_el), np.mean(ces_di)))
 
                 if train_ind % cfg.TRAIN.SAVE_FREQ == 0 and not train_ind == 0:
                     model.save(saver, session)
