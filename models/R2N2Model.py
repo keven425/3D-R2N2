@@ -83,7 +83,7 @@ class R2N2Model(Model):
       # because conv2d() function only takes 4D tensor, for 2D convolution
       self.input_placeholder.get_shape()
       input = tf.reshape(self.input_placeholder, shape=(-1, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
-      input = tf.Print(input, [tf.reduce_min(input), tf.reduce_max(input), input], message="input")
+      # input = tf.Print(input, [tf.reduce_min(input), tf.reduce_max(input), input], message="input")
 
       # 1st conv layer
       conv11 = tf.contrib.layers.conv2d(inputs=input, num_outputs=64, kernel_size=[7, 7], stride=1, padding="same",
