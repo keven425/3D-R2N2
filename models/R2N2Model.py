@@ -177,7 +177,7 @@ class R2N2Model(Model):
       b_dfc2 = tf.get_variable("b_dfc2", shape=3, dtype=np.float32)
       delta_poses = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2) + b_dfc2
       delta_poses = tf.nn.relu(delta_poses)
-      delta_poses = tf.Print(delta_poses, [tf.reduce_min(delta_poses), tf.reduce_max(delta_poses), delta_poses], message="delta_poses")
+      delta_poses = tf.Print(delta_poses, [tf.reduce_min(delta_poses), tf.reduce_max(delta_poses), tf.reduce_mean(delta_poses), delta_poses], message="delta_poses")
 
 
       # deconvolutional layers
