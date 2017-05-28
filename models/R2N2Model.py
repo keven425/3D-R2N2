@@ -166,17 +166,16 @@ class R2N2Model(Model):
       h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
 
       # predict pose delta
-      delta_states = states[:,1:] - states[:,:-1]
-      d_states_size = delta_states.get_shape()[-1].value
-      W_dfc1 = tf.get_variable("W_dfc1", shape=(d_states_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      states_concat = tf.concat([states[:, 1:], states[:, :-1]], axis=-1)
+      states_concat_size = states_concat.get_shape()[-1].value
+      W_dfc1 = tf.get_variable("W_dfc1", shape=(states_concat_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
       b_dfc1 = tf.get_variable("b_dfc1", shape=128, dtype=np.float32)
-      fc_delta = tf.einsum('ijk,kl->ijl', delta_states, W_dfc1) + b_dfc1
+      fc_delta = tf.einsum('ijk,kl->ijl', states_concat, W_dfc1) + b_dfc1
       fc_delta = tf.nn.relu(fc_delta)
       fc_delta = tf.Print(fc_delta, [tf.reduce_min(fc_delta), tf.reduce_max(fc_delta), fc_delta], message="fc_delta")
       W_dfc2 = tf.get_variable("W_dfc2", shape=(128, 3), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
       b_dfc2 = tf.get_variable("b_dfc2", shape=3, dtype=np.float32)
       delta_poses = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2) + b_dfc2
-      delta_poses = tf.nn.relu(delta_poses)
       delta_poses = tf.Print(delta_poses, [tf.reduce_min(delta_poses), tf.reduce_max(delta_poses), tf.reduce_mean(delta_poses), delta_poses], message="delta_poses")
 
 
