@@ -1,0 +1,8 @@
+Single training objective:
+    May 26 22:02:03 mashgin-gtx dev.log  Validation IoU: 0.654366
+
+Pose regression:
+    May 29 03:26:59 mashgin-gtx dev.log  Validation IoU: 0.622316, pose RMSE: 0.425503
+
+Pose classification:
+    May 29 04:30:53 training-35 multi-gpu-dev.log  Validation IoU: 0.501531, ce_azimuth: 5.453794, ce_elevation: 2.112093, ce_distance: 8.232320
