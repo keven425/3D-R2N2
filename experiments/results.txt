@@ -1,8 +1,53 @@
+***************
 Single training objective:
-    May 26 22:02:03 mashgin-gtx dev.log  Validation IoU: 0.654366
+***************
+May 26 22:02:03 mashgin-gtx dev.log  Validation IoU: 0.654366
 
+
+***************
 Pose regression:
-    May 29 03:26:59 mashgin-gtx dev.log  Validation IoU: 0.622316, pose RMSE: 0.425503
+***************
+best: May 29 03:26:59 mashgin-gtx dev.log  Validation IoU: 0.622316, pose RMSE: 0.425503
 
+May 28 17:47:33 mashgin-gtx dev.log  Validation IoU: 0.508357, pose RMSE: 0.412102
+May 28 18:18:27 mashgin-gtx dev.log  Validation IoU: 0.551357, pose RMSE: 0.544964
+May 28 18:49:21 mashgin-gtx dev.log  Validation IoU: 0.520377, pose RMSE: 0.422482
+May 28 19:19:06 mashgin-gtx dev.log  Validation IoU: 0.557608, pose RMSE: 0.528534
+May 28 19:50:00 mashgin-gtx dev.log  Validation IoU: 0.540632, pose RMSE: 0.478761
+May 28 20:19:46 mashgin-gtx dev.log  Validation IoU: 0.567780, pose RMSE: 0.450343
+May 28 20:50:43 mashgin-gtx dev.log  Validation IoU: 0.576105, pose RMSE: 0.550485
+May 28 21:21:41 mashgin-gtx dev.log  Validation IoU: 0.557119, pose RMSE: 0.420527
+May 28 21:51:26 mashgin-gtx dev.log  Validation IoU: 0.580091, pose RMSE: 0.421988
+May 28 22:22:20 mashgin-gtx dev.log  Validation IoU: 0.571011, pose RMSE: 0.516801
+May 28 22:53:10 mashgin-gtx dev.log  Validation IoU: 0.577193, pose RMSE: 0.463584
+May 28 23:22:56 mashgin-gtx dev.log  Validation IoU: 0.585325, pose RMSE: 0.537043
+May 28 23:53:54 mashgin-gtx dev.log  Validation IoU: 0.584215, pose RMSE: 0.499698
+May 29 00:24:51 mashgin-gtx dev.log  Validation IoU: 0.593060, pose RMSE: 0.476955
+May 29 00:54:35 mashgin-gtx dev.log  Validation IoU: 0.586414, pose RMSE: 0.555937
+May 29 01:25:31 mashgin-gtx dev.log  Validation IoU: 0.594200, pose RMSE: 0.421847
+May 29 01:55:15 mashgin-gtx dev.log  Validation IoU: 0.605761, pose RMSE: 0.408072
+May 29 02:26:14 mashgin-gtx dev.log  Validation IoU: 0.608268, pose RMSE: 0.314192
+May 29 02:57:11 mashgin-gtx dev.log  Validation IoU: 0.604403, pose RMSE: 0.385840
+May 29 03:26:59 mashgin-gtx dev.log  Validation IoU: 0.622316, pose RMSE: 0.425503
+May 29 03:57:58 mashgin-gtx dev.log  Validation IoU: 0.566024, pose RMSE: 0.482779
+May 29 04:28:49 mashgin-gtx dev.log  Validation IoU: 0.609973, pose RMSE: 0.494732
+May 29 04:58:32 mashgin-gtx dev.log  Validation IoU: 0.585332, pose RMSE: 0.389220
+May 29 05:29:26 mashgin-gtx dev.log  Validation IoU: 0.609153, pose RMSE: 0.419774
+May 29 06:00:22 mashgin-gtx dev.log  Validation IoU: 0.617456, pose RMSE: 0.409425
+May 29 06:29:59 mashgin-gtx dev.log  Validation IoU: 0.617337, pose RMSE: 0.280487
+
+***************
 Pose classification:
-    May 29 04:30:53 training-35 multi-gpu-dev.log  Validation IoU: 0.501531, ce_azimuth: 5.453794, ce_elevation: 2.112093, ce_distance: 8.232320
+***************
+best: May 29 04:30:53 training-35 multi-gpu-dev.log  Validation IoU: 0.501531, ce_azimuth: 5.453794, ce_elevation: 2.112093, ce_distance: 8.232320
+
+May 28 22:15:29 training-35 multi-gpu-dev.log  Validation IoU: 0.432885, ce_azimuth: 4.806924, ce_elevation: 2.148373, ce_distance: 7.683477
+May 28 23:08:37 training-35 multi-gpu-dev.log  Validation IoU: 0.352233, ce_azimuth: 4.947311, ce_elevation: 2.140400, ce_distance: 7.112938
+May 29 00:01:40 training-35 multi-gpu-dev.log  Validation IoU: 0.468944, ce_azimuth: 5.278301, ce_elevation: 2.070774, ce_distance: 7.959223
+May 29 00:54:39 training-35 multi-gpu-dev.log  Validation IoU: 0.390671, ce_azimuth: 5.164205, ce_elevation: 2.221604, ce_distance: 7.579707
+May 29 01:47:30 training-35 multi-gpu-dev.log  Validation IoU: 0.463345, ce_azimuth: 5.735693, ce_elevation: 2.296163, ce_distance: 8.371560
+May 29 02:42:58 training-35 multi-gpu-dev.log  Validation IoU: 0.425219, ce_azimuth: 5.351550, ce_elevation: 1.933746, ce_distance: 7.873497
+May 29 03:35:31 training-35 multi-gpu-dev.log  Validation IoU: 0.498175, ce_azimuth: 5.362607, ce_elevation: 2.221785, ce_distance: 7.919808
+May 29 04:30:53 training-35 multi-gpu-dev.log  Validation IoU: 0.501531, ce_azimuth: 5.453794, ce_elevation: 2.112093, ce_distance: 8.232320
+May 29 05:23:27 training-35 multi-gpu-dev.log  Validation IoU: 0.457971, ce_azimuth: 6.187692, ce_elevation: 2.436765, ce_distance: 9.361367
+May 29 06:16:01 training-35 multi-gpu-dev.log  Validation IoU: 0.470082, ce_azimuth: 6.567454, ce_elevation: 2.588213, ce_distance: 8.793103
