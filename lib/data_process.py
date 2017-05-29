@@ -196,7 +196,7 @@ class ReconstructionDataProcess(DataProcess):
         avg_diff = 360. * 2 / cfg.TRAIN.NUM_RENDERING
         azimuth = pose[0] / avg_diff  # normalize to avoid crowding out other loss
         elevation = pose[1] / avg_diff  # normalize. same reason as above
-        distance = pose[3]
+        distance = pose[3] * 10
         return [azimuth, elevation, distance]
 
     def load_poses_images(self, category, model_id):
