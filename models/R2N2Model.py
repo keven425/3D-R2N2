@@ -140,19 +140,19 @@ class R2N2Model(Model):
       conv5 = conv52 + conv5_res
       conv5 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='conv5_pool')
 
-      # conv5_flattened = tf.contrib.layers.flatten(conv5)
-      # conv5_flattened = tf.Print(conv5_flattened, [tf.reduce_min(conv5_flattened), tf.reduce_max(conv5_flattened), conv5_flattened], message="conv5_flattened")
-      #
-      # n_fc_outputs = 1024
-      # fc = tf.contrib.layers.fully_connected(inputs=conv5_flattened, num_outputs=n_fc_outputs,
-      #                                        activation_fn=None, scope="fc1", reuse=False)
-      # fc = tf.contrib.layers.batch_norm(fc, center=True, scale=True, is_training=self.is_training_placeholder,
-      #                                   scope='fc_batch_norm')
-      # fc = tf.nn.relu(fc, name='relu')
-      #
-      # # reshape back to (batch_size, CONST.N_VIEWS, n_fc_outputs)
-      # fc = tf.reshape(fc, shape=(-1, self.config.CONST.N_VIEWS, n_fc_outputs))
-      # fc = tf.Print(fc, [tf.reduce_min(fc), tf.reduce_max(fc), fc], message="fc")
+      conv5_flattened = tf.contrib.layers.flatten(conv5)
+      conv5_flattened = tf.Print(conv5_flattened, [tf.reduce_min(conv5_flattened), tf.reduce_max(conv5_flattened), conv5_flattened], message="conv5_flattened")
+
+      n_fc_outputs = 1024
+      fc = tf.contrib.layers.fully_connected(inputs=conv5_flattened, num_outputs=n_fc_outputs,
+                                             activation_fn=None, scope="fc1", reuse=False)
+      fc = tf.contrib.layers.batch_norm(fc, center=True, scale=True, is_training=self.is_training_placeholder,
+                                        scope='fc_batch_norm')
+      fc = tf.nn.relu(fc, name='relu')
+
+      # reshape back to (batch_size, CONST.N_VIEWS, n_fc_outputs)
+      fc = tf.reshape(fc, shape=(-1, self.config.CONST.N_VIEWS, n_fc_outputs))
+      fc = tf.Print(fc, [tf.reduce_min(fc), tf.reduce_max(fc), fc], message="fc")
 
       # 3D GRU
       # grid_state_size = (4, 4, 4, 128)
@@ -163,42 +163,17 @@ class R2N2Model(Model):
       # h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
 
       # predict pose delta
-      conv61 = tf.contrib.layers.conv2d(inputs=conv5, num_outputs=512, kernel_size=[3, 3], stride=1, padding="same",
-                                        activation_fn=tf.nn.relu, scope="conv61", reuse=False)
-      conv62 = tf.contrib.layers.conv2d(inputs=conv61, num_outputs=512, kernel_size=[3, 3], stride=1, padding="same",
-                                        activation_fn=tf.nn.relu, scope="conv62", reuse=False)
-      conv6_res = tf.contrib.layers.conv2d(inputs=conv5, num_outputs=512, kernel_size=[1, 1], stride=1, padding="same",
-                                           activation_fn=tf.nn.relu, scope="conv6_res", reuse=False)
-      conv6 = conv62 + conv6_res
-      conv6 = tf.nn.avg_pool(conv6, ksize=[1, 4, 4, 1], strides=[1, 4, 4, 1], padding='SAME', name='conv6_pool')
-      conv6_flattened = tf.contrib.layers.flatten(conv6)
-
-      # reshape back to (batch_size, CONST.N_VIEWS, n_fc_outputs)
-      n_conv_output = conv6_flattened.get_shape()[-1].value
-      fc = tf.reshape(conv6_flattened, shape=(-1, self.config.CONST.N_VIEWS, n_conv_output))
-      fc = tf.Print(fc, [tf.reduce_min(fc), tf.reduce_max(fc), fc], message="fc")
-
       states_concat = tf.concat([fc[:, 1:], fc[:, :-1]], axis=-1)
       states_concat_size = states_concat.get_shape()[-1].value
-
-      W_dfc1 = tf.get_variable("W_dfc1", shape=(states_concat_size, 512), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
-      b_dfc1 = tf.get_variable("b_dfc1", shape=512, dtype=np.float32)
-      fc_delta1 = tf.einsum('ijk,kl->ijl', states_concat, W_dfc1) + b_dfc1
-      fc_delta1 = tf.contrib.layers.batch_norm(fc_delta1, center=True, scale=True, is_training=self.is_training_placeholder, scope='fc_delta_batch_norm1')
-      fc_delta1 = tf.nn.relu(fc_delta1)
-      fc_delta1 = tf.Print(fc_delta1, [tf.reduce_min(fc_delta1), tf.reduce_max(fc_delta1), fc_delta1], message="fc_delta1")
-
-      W_dfc2 = tf.get_variable("W_dfc2", shape=(512, 512), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
-      b_dfc2 = tf.get_variable("b_dfc2", shape=512, dtype=np.float32)
-      fc_delta2 = tf.einsum('ijk,kl->ijl', fc_delta1, W_dfc2) + b_dfc2
-      fc_delta2 = tf.contrib.layers.batch_norm(fc_delta2, center=True, scale=True, is_training=self.is_training_placeholder, scope='fc_delta_batch_norm2')
-      fc_delta2 = tf.nn.relu(fc_delta2)
-      fc_delta2 = tf.Print(fc_delta2, [tf.reduce_min(fc_delta2), tf.reduce_max(fc_delta2), fc_delta2], message="fc_delta2")
-
-      W_dfc3 = tf.get_variable("W_dfc3", shape=(512, 3), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
-      b_dfc3 = tf.get_variable("b_dfc3", shape=3, dtype=np.float32)
-      delta_poses = tf.einsum('ijk,kl->ijl', fc_delta2, W_dfc3) + b_dfc3
-
+      W_dfc1 = tf.get_variable("W_dfc1", shape=(states_concat_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      b_dfc1 = tf.get_variable("b_dfc1", shape=128, dtype=np.float32)
+      fc_delta = tf.einsum('ijk,kl->ijl', states_concat, W_dfc1) + b_dfc1
+      fc_delta = tf.contrib.layers.batch_norm(fc_delta, center=True, scale=True, is_training=self.is_training_placeholder, scope='fc_delta_batch_norm')
+      fc_delta = tf.nn.relu(fc_delta)
+      fc_delta = tf.Print(fc_delta, [tf.reduce_min(fc_delta), tf.reduce_max(fc_delta), fc_delta], message="fc_delta")
+      W_dfc2 = tf.get_variable("W_dfc2", shape=(128, 3), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      b_dfc2 = tf.get_variable("b_dfc2", shape=3, dtype=np.float32)
+      delta_poses = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2) + b_dfc2
       delta_az = delta_poses[:, :, 0]
       delta_el = delta_poses[:, :, 1]
       delta_di = delta_poses[:, :, 2]
