@@ -155,21 +155,15 @@ class R2N2Model(Model):
       fc = tf.Print(fc, [tf.reduce_min(fc), tf.reduce_max(fc), fc], message="fc")
 
       # 3D GRU
-      grid_state_size = (4, 4, 4, 128)
-      cell = GRU3dCell(fc.shape[-1].value, grid_state_size)
-
-      # # flatten, to test for non recurrent case
-      # assert(fc.get_shape()[-2].value == 1)
-      # fc = tf.reshape(fc, shape=(-1, fc.get_shape()[-1].value))
-      # _, h = cell(fc, tf.zeros(shape=(np.prod(grid_state_size),)))
-
-      states, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
-      shape = [-1] + list(grid_state_size)
-      h = tf.reshape(h, shape=shape) # reshape back to 3d
-      h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
+      # grid_state_size = (4, 4, 4, 128)
+      # cell = GRU3dCell(fc.shape[-1].value, grid_state_size)
+      # states, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
+      # shape = [-1] + list(grid_state_size)
+      # h = tf.reshape(h, shape=shape) # reshape back to 3d
+      # h = tf.Print(h, [tf.reduce_min(h), tf.reduce_max(h), h], message="3D GRU output")
 
       # predict pose delta
-      states_concat = tf.concat([states[:, 1:], states[:, :-1]], axis=-1)
+      states_concat = tf.concat([fc[:, 1:], fc[:, :-1]], axis=-1)
       states_concat_size = states_concat.get_shape()[-1].value
       W_dfc1 = tf.get_variable("W_dfc1", shape=(states_concat_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
       b_dfc1 = tf.get_variable("b_dfc1", shape=128, dtype=np.float32)
