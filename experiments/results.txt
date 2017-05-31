@@ -168,3 +168,11 @@ May 30 10:20:09 training-35 multi-gpu-dev.log  Validation az RMSE: 0.795250, el 
 May 30 10:55:41 training-35 multi-gpu-dev.log  Validation az RMSE: 0.968140, el RMSE: 0.083240, di RMSE: 0.211568
 May 30 11:31:15 training-35 multi-gpu-dev.log  Validation az RMSE: 0.819500, el RMSE: 0.096533, di RMSE: 0.273876
 May 30 12:06:56 training-35 multi-gpu-dev.log  Validation az RMSE: 0.823073, el RMSE: 0.098288, di RMSE: 0.216701
+May 30 12:42:40 training-35 multi-gpu-dev.log  Validation az RMSE: 1.195612, el RMSE: 0.093808, di RMSE: 0.292774
+May 30 13:16:32 training-35 multi-gpu-dev.log  Validation az RMSE: 0.925277, el RMSE: 0.094305, di RMSE: 0.239045
+May 30 13:52:16 training-35 multi-gpu-dev.log  Validation az RMSE: 0.762930, el RMSE: 0.099541, di RMSE: 0.362472
+May 30 14:27:53 training-35 multi-gpu-dev.log  Validation az RMSE: 0.653101, el RMSE: 0.111531, di RMSE: 0.221074
+May 30 15:03:26 training-35 multi-gpu-dev.log  Validation az RMSE: 0.739903, el RMSE: 0.104042, di RMSE: 0.276332
+May 30 15:38:58 training-35 multi-gpu-dev.log  Validation az RMSE: 0.654491, el RMSE: 0.101345, di RMSE: 0.286666
+May 30 16:14:30 training-35 multi-gpu-dev.log  Validation az RMSE: 0.708413, el RMSE: 0.091347, di RMSE: 0.269721
+May 30 16:48:12 training-35 multi-gpu-dev.log  Validation az RMSE: 0.735239, el RMSE: 0.094248, di RMSE: 0.252139
