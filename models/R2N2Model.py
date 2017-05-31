@@ -191,6 +191,9 @@ class R2N2Model(Model):
       delta_el = tf.Print(delta_el, [tf.reduce_min(delta_el), tf.reduce_max(delta_el), tf.reduce_mean(delta_el), delta_el], message="delta_el")
       delta_di = tf.Print(delta_di, [tf.reduce_min(delta_di), tf.reduce_max(delta_di), tf.reduce_mean(delta_di), delta_di], message="delta_di")
 
+    delta_az = tf.zeros_like(delta_az)
+    delta_el = tf.zeros_like(delta_el)
+    delta_di = tf.zeros_like(delta_di)
     return delta_az, delta_el, delta_di
 
   def add_prediction_op(self, logits):

@@ -110,7 +110,7 @@ class Model(object):
         self.logit = self.add_logit_op()
         self.pred = self.add_prediction_op(self.logit)
         self.loss = self.add_loss_op(self.logit)
-        self.train_op = self.add_training_op(self.loss)
+        # self.train_op = self.add_training_op(self.loss)
 
     ################## Run training and evaluation #########################
 

@@ -134,12 +134,12 @@ def train(train_queue, val_queue=None):
                     lr = np.float(cfg.TRAIN.LEARNING_RATES[str(train_ind)])
 
                 # Apply one gradient step
-                train_timer.tic()
-                loss, grad_norm, learning_rate, logits_pose_norm, grads_vars = model.train_on_batch(session, batch_img, batch_voxel, batch_pose, lr)
-                train_timer.toc()
-                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm_pose: %f' % (loss, grad_norm, learning_rate, logits_pose_norm))
-
-                training_losses.append(loss)
+                # train_timer.tic()
+                # loss, grad_norm, learning_rate, logits_pose_norm, grads_vars = model.train_on_batch(session, batch_img, batch_voxel, batch_pose, lr)
+                # train_timer.toc()
+                # print('loss: %f, gradnorm: %f, lr: %f, logitsnorm_pose: %f' % (loss, grad_norm, learning_rate, logits_pose_norm))
+                #
+                # training_losses.append(loss)
 
                 # Debugging modules
                 #
