@@ -142,6 +142,49 @@ May 30 11:25:03 mashgin-gtx dev.log  Validation az RMSE: 0.785205, el RMSE: 0.08
 May 30 11:41:47 mashgin-gtx dev.log  Validation az RMSE: 0.742781, el RMSE: 0.100208, di RMSE: 0.186883
 May 30 11:58:36 mashgin-gtx dev.log  Validation az RMSE: 0.721140, el RMSE: 0.081792, di RMSE: 0.252271
 May 30 12:14:32 mashgin-gtx dev.log  Validation az RMSE: 0.583328, el RMSE: 0.073597, di RMSE: 0.173875
+May 30 12:31:21 mashgin-gtx dev.log  Validation az RMSE: 0.905545, el RMSE: 0.078470, di RMSE: 0.210429
+May 30 12:48:11 mashgin-gtx dev.log  Validation az RMSE: 0.575220, el RMSE: 0.074467, di RMSE: 0.183264
+May 30 13:05:03 mashgin-gtx dev.log  Validation az RMSE: 0.601031, el RMSE: 0.086648, di RMSE: 0.145993
+
+***************
+Pose regression single objective. fc in. 3 fc layers. n_views=4
+***************
+May 30 13:22:52 mashgin-gtx dev.log  Validation az RMSE: 1.639503, el RMSE: 1.205749, di RMSE: 1.943711
+May 30 13:38:47 mashgin-gtx dev.log  Validation az RMSE: 1.038600, el RMSE: 0.321831, di RMSE: 1.503259
+May 30 13:55:34 mashgin-gtx dev.log  Validation az RMSE: 1.110106, el RMSE: 0.154651, di RMSE: 1.235833
+May 30 14:12:23 mashgin-gtx dev.log  Validation az RMSE: 1.027240, el RMSE: 0.166814, di RMSE: 0.665737
+May 30 14:29:19 mashgin-gtx dev.log  Validation az RMSE: 1.108360, el RMSE: 0.224332, di RMSE: 0.710693
+May 30 14:46:07 mashgin-gtx dev.log  Validation az RMSE: 0.959451, el RMSE: 0.297596, di RMSE: 1.160527
+May 30 15:02:02 mashgin-gtx dev.log  Validation az RMSE: 1.127662, el RMSE: 0.167436, di RMSE: 0.683847
+May 30 15:18:50 mashgin-gtx dev.log  Validation az RMSE: 0.874403, el RMSE: 0.115735, di RMSE: 0.307781
+May 30 15:35:37 mashgin-gtx dev.log  Validation az RMSE: 1.051281, el RMSE: 0.111232, di RMSE: 0.511103
+May 30 15:52:36 mashgin-gtx dev.log  Validation az RMSE: 1.059207, el RMSE: 0.118510, di RMSE: 0.248936
+May 30 16:09:35 mashgin-gtx dev.log  Validation az RMSE: 0.901691, el RMSE: 0.105394, di RMSE: 0.321638
+May 30 16:26:36 mashgin-gtx dev.log  Validation az RMSE: 1.129953, el RMSE: 0.117286, di RMSE: 0.376296
+May 30 16:42:37 mashgin-gtx dev.log  Validation az RMSE: 0.897966, el RMSE: 0.108568, di RMSE: 0.339412
+May 30 16:59:32 mashgin-gtx dev.log  Validation az RMSE: 0.989964, el RMSE: 0.100341, di RMSE: 0.237802
+May 30 17:16:25 mashgin-gtx dev.log  Validation az RMSE: 0.812850, el RMSE: 0.104276, di RMSE: 0.272526
+May 30 17:33:25 mashgin-gtx dev.log  Validation az RMSE: 0.760884, el RMSE: 0.106186, di RMSE: 0.175952
+May 30 17:50:25 mashgin-gtx dev.log  Validation az RMSE: 0.927334, el RMSE: 0.108851, di RMSE: 0.226048
+May 30 18:06:31 mashgin-gtx dev.log  Validation az RMSE: 0.974340, el RMSE: 0.089168, di RMSE: 0.276852
+May 30 18:23:31 mashgin-gtx dev.log  Validation az RMSE: 0.913593, el RMSE: 0.091349, di RMSE: 0.290895
+May 30 18:40:28 mashgin-gtx dev.log  Validation az RMSE: 0.907273, el RMSE: 0.089464, di RMSE: 0.391972
+May 30 18:57:26 mashgin-gtx dev.log  Validation az RMSE: 0.792673, el RMSE: 0.097743, di RMSE: 0.262740
+May 30 19:14:28 mashgin-gtx dev.log  Validation az RMSE: 0.828530, el RMSE: 0.101319, di RMSE: 0.192367
+May 30 19:31:27 mashgin-gtx dev.log  Validation az RMSE: 0.863808, el RMSE: 0.086292, di RMSE: 0.230889
+May 30 19:47:32 mashgin-gtx dev.log  Validation az RMSE: 0.860997, el RMSE: 0.094754, di RMSE: 0.230495
+May 30 20:04:30 mashgin-gtx dev.log  Validation az RMSE: 0.784128, el RMSE: 0.114770, di RMSE: 0.230670
+May 30 20:21:28 mashgin-gtx dev.log  Validation az RMSE: 0.638103, el RMSE: 0.090543, di RMSE: 0.192526
+May 30 20:38:24 mashgin-gtx dev.log  Validation az RMSE: 0.692814, el RMSE: 0.104572, di RMSE: 0.311991
+May 30 20:55:25 mashgin-gtx dev.log  Validation az RMSE: 0.651751, el RMSE: 0.089088, di RMSE: 0.220933
+May 30 21:12:23 mashgin-gtx dev.log  Validation az RMSE: 0.623140, el RMSE: 0.095159, di RMSE: 0.271597
+May 30 21:28:29 mashgin-gtx dev.log  Validation az RMSE: 0.680732, el RMSE: 0.086709, di RMSE: 0.277700
+May 30 21:45:26 mashgin-gtx dev.log  Validation az RMSE: 0.685557, el RMSE: 0.080937, di RMSE: 0.189612
+May 30 22:02:25 mashgin-gtx dev.log  Validation az RMSE: 0.697088, el RMSE: 0.086095, di RMSE: 0.215703
+May 30 22:19:24 mashgin-gtx dev.log  Validation az RMSE: 0.799796, el RMSE: 0.086500, di RMSE: 0.147142
+May 30 22:36:25 mashgin-gtx dev.log  Validation az RMSE: 0.969936, el RMSE: 0.081960, di RMSE: 0.199427
+May 30 22:52:29 mashgin-gtx dev.log  Validation az RMSE: 0.732202, el RMSE: 0.093465, di RMSE: 0.195261
+May 30 23:09:27 mashgin-gtx dev.log  Validation az RMSE: 0.772221, el RMSE: 0.080013, di RMSE: 0.237553
 
 ***************
 Pose regression single objective. cnn in. n_views=4
@@ -176,3 +219,13 @@ May 30 15:03:26 training-35 multi-gpu-dev.log  Validation az RMSE: 0.739903, el 
 May 30 15:38:58 training-35 multi-gpu-dev.log  Validation az RMSE: 0.654491, el RMSE: 0.101345, di RMSE: 0.286666
 May 30 16:14:30 training-35 multi-gpu-dev.log  Validation az RMSE: 0.708413, el RMSE: 0.091347, di RMSE: 0.269721
 May 30 16:48:12 training-35 multi-gpu-dev.log  Validation az RMSE: 0.735239, el RMSE: 0.094248, di RMSE: 0.252139
+May 30 17:23:47 training-35 multi-gpu-dev.log  Validation az RMSE: 0.708632, el RMSE: 0.086085, di RMSE: 0.199298
+May 30 17:59:23 training-35 multi-gpu-dev.log  Validation az RMSE: 0.678986, el RMSE: 0.083950, di RMSE: 0.253105
+May 30 18:34:59 training-35 multi-gpu-dev.log  Validation az RMSE: 0.848210, el RMSE: 0.092316, di RMSE: 0.201223
+May 30 19:10:37 training-35 multi-gpu-dev.log  Validation az RMSE: 0.869910, el RMSE: 0.077630, di RMSE: 0.264376
+May 30 19:44:21 training-35 multi-gpu-dev.log  Validation az RMSE: 0.842518, el RMSE: 0.090897, di RMSE: 0.186544
+May 30 20:19:56 training-35 multi-gpu-dev.log  Validation az RMSE: 0.803865, el RMSE: 0.084026, di RMSE: 0.223982
+May 30 20:55:31 training-35 multi-gpu-dev.log  Validation az RMSE: 0.752599, el RMSE: 0.080816, di RMSE: 0.253605
+May 30 21:31:09 training-35 multi-gpu-dev.log  Validation az RMSE: 0.835355, el RMSE: 0.070252, di RMSE: 0.233160
+May 30 22:06:45 training-35 multi-gpu-dev.log  Validation az RMSE: 0.695104, el RMSE: 0.077978, di RMSE: 0.217700
+May 30 22:42:23 training-35 multi-gpu-dev.log  Validation az RMSE: 0.662608, el RMSE: 0.086834, di RMSE: 0.162093
