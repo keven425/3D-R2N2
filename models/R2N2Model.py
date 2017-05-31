@@ -161,8 +161,7 @@ class R2N2Model(Model):
       states_concat = tf.concat([fc[:, 1:], fc[:, :-1]], axis=-1)
       states_concat_size = states_concat.get_shape()[-1].value
       W_dfc1 = tf.get_variable("W_dfc1", shape=(states_concat_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
-      b_dfc1 = tf.get_variable("b_dfc1", shape=128, dtype=np.float32)
-      fc_delta = tf.einsum('ijk,kl->ijl', states_concat, W_dfc1) + b_dfc1
+      fc_delta = tf.einsum('ijk,kl->ijl', states_concat, W_dfc1)
       fc_delta = tf.contrib.layers.batch_norm(fc_delta, center=True, scale=True, is_training=self.is_training_placeholder, scope='fc_delta_batch_norm')
       fc_delta = tf.nn.relu(fc_delta)
       fc_delta = tf.Print(fc_delta, [tf.reduce_min(fc_delta), tf.reduce_max(fc_delta), fc_delta], message="fc_delta")
