@@ -135,9 +135,11 @@ def train(train_queue, val_queue=None):
 
                 # Apply one gradient step
                 train_timer.tic()
-                loss, grad_norm, learning_rate, logits_pose_norm, grads_vars = model.train_on_batch(session, batch_img, batch_voxel, batch_pose, lr)
+                loss, grad_norm, learning_rate, logits_pose_norm, logits_label_norm, grads_vars = model.train_on_batch(
+                    session, batch_img, batch_voxel, batch_pose, lr)
                 train_timer.toc()
-                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm_pose: %f' % (loss, grad_norm, learning_rate, logits_pose_norm))
+                print('loss: %f, gradnorm: %f, lr: %f, logitsnorm_pose: %f, logitsnorm_label: %f' % (
+                loss, grad_norm, learning_rate, logits_pose_norm, logits_label_norm))
 
                 training_losses.append(loss)
 
@@ -151,21 +153,22 @@ def train(train_queue, val_queue=None):
                 if train_ind % cfg.TRAIN.VALIDATION_FREQ == 0 and val_queue is not None:
                     print('validating ...')
                     # Print test loss and params to check convergence every N iterations
-                    ious = []
                     az_rmses = []
                     el_rmses = []
                     di_rmses = []
+                    ious = []
                     for i in range(cfg.TRAIN.NUM_VALIDATION_ITERATIONS):
                         batch_img, batch_voxel, batch_pose = val_queue.get()
-                        az_rmse, el_rmse, di_rmse = model.evaluate_on_batch(session, batch_img, batch_voxel, batch_pose)
+                        az_rmse, el_rmse, di_rmse, iou = model.evaluate_on_batch(session, batch_img, batch_voxel, batch_pose)
                         az_rmses.append(az_rmse)
                         el_rmses.append(el_rmse)
                         di_rmses.append(di_rmse)
-                    print('%s Validation az RMSE: %f, el RMSE: %f, di RMSE: %f' % (datetime.now(), np.mean(az_rmse), np.mean(el_rmse), np.mean(di_rmse)))
+                        ious.append(iou)
+                    print('%s Validation az RMSE: %f, el RMSE: %f, di RMSE: %f, IoU: %f' % (
+                    datetime.now(), np.mean(az_rmse), np.mean(el_rmse), np.mean(di_rmse), np.mean(ious)))
 
                 if train_ind % cfg.TRAIN.SAVE_FREQ == 0 and not train_ind == 0:
                     model.save(saver, session)
-
 
 def main():
     '''Test function'''
