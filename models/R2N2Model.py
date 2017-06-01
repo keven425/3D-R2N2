@@ -258,7 +258,7 @@ class R2N2Model(Model):
     rmse_el = tf.Print(rmse_el, [rmse_el], message="rmse_el")
     rmse_di = tf.Print(rmse_di, [rmse_di], message="rmse_di")
 
-    loss = tf.reduce_mean([rmse_az, rmse_el, rmse_di]) + loss_label
+    loss = tf.reduce_mean([rmse_az, rmse_el, rmse_di]) + loss_label * 3
     return loss
 
   def add_training_op(self, loss):
