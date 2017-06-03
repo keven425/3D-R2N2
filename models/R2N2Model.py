@@ -114,31 +114,31 @@ class R2N2Model(Model):
 
 
       # 3rd conv layer
-      conv31 = tf.contrib.layers.conv2d(inputs=conv2, num_outputs=256, kernel_size=[3, 3], stride=1, padding="same",
+      conv31 = tf.contrib.layers.conv2d(inputs=conv2, num_outputs=128, kernel_size=[3, 3], stride=1, padding="same",
         activation_fn=tf.nn.relu, scope="conv31", reuse=False)
-      conv32 = tf.contrib.layers.conv2d(inputs=conv31, num_outputs=256, kernel_size=[3, 3], stride=1, padding="same",
+      conv32 = tf.contrib.layers.conv2d(inputs=conv31, num_outputs=128, kernel_size=[3, 3], stride=1, padding="same",
         activation_fn=tf.nn.relu, scope="conv32", reuse=False)
-      conv3_res = tf.contrib.layers.conv2d(inputs=conv2, num_outputs=256, kernel_size=[1, 1], stride=1, padding="same",
+      conv3_res = tf.contrib.layers.conv2d(inputs=conv2, num_outputs=128, kernel_size=[1, 1], stride=1, padding="same",
         activation_fn=tf.nn.relu, scope="conv3_res", reuse=False)
       conv3 = conv32 + conv3_res
       conv3 = tf.nn.max_pool(conv3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='conv3_pool')
 
       # 4th conv layer
-      conv41 = tf.contrib.layers.conv2d(inputs=conv3, num_outputs=256, kernel_size=[3, 3], stride=1, padding="same",
+      conv41 = tf.contrib.layers.conv2d(inputs=conv3, num_outputs=128, kernel_size=[3, 3], stride=1, padding="same",
                                         activation_fn=tf.nn.relu, scope="conv41", reuse=False)
-      conv42 = tf.contrib.layers.conv2d(inputs=conv41, num_outputs=256, kernel_size=[3, 3], stride=1, padding="same",
+      conv42 = tf.contrib.layers.conv2d(inputs=conv41, num_outputs=128, kernel_size=[3, 3], stride=1, padding="same",
                                         activation_fn=tf.nn.relu, scope="conv42", reuse=False)
-      conv4_res = tf.contrib.layers.conv2d(inputs=conv3, num_outputs=256, kernel_size=[1, 1], stride=1, padding="same",
+      conv4_res = tf.contrib.layers.conv2d(inputs=conv3, num_outputs=128, kernel_size=[1, 1], stride=1, padding="same",
                                            activation_fn=tf.nn.relu, scope="conv4_res", reuse=False)
       conv4 = conv42 + conv4_res
       conv4 = tf.nn.max_pool(conv4, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='conv4_pool')
 
       # 5th conv layer
-      conv51 = tf.contrib.layers.conv2d(inputs=conv4, num_outputs=256, kernel_size=[3, 3], stride=1, padding="same",
+      conv51 = tf.contrib.layers.conv2d(inputs=conv4, num_outputs=128, kernel_size=[3, 3], stride=1, padding="same",
                                         activation_fn=tf.nn.relu, scope="conv51", reuse=False)
-      conv52 = tf.contrib.layers.conv2d(inputs=conv51, num_outputs=256, kernel_size=[3, 3], stride=1, padding="same",
+      conv52 = tf.contrib.layers.conv2d(inputs=conv51, num_outputs=128, kernel_size=[3, 3], stride=1, padding="same",
                                         activation_fn=tf.nn.relu, scope="conv52", reuse=False)
-      conv5_res = tf.contrib.layers.conv2d(inputs=conv4, num_outputs=256, kernel_size=[1, 1], stride=1, padding="same",
+      conv5_res = tf.contrib.layers.conv2d(inputs=conv4, num_outputs=128, kernel_size=[1, 1], stride=1, padding="same",
                                            activation_fn=tf.nn.relu, scope="conv5_res", reuse=False)
       conv5 = conv52 + conv5_res
       conv5 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='conv5_pool')
@@ -146,7 +146,7 @@ class R2N2Model(Model):
       conv5_flattened = tf.contrib.layers.flatten(conv5)
       conv5_flattened = tf.Print(conv5_flattened, [tf.reduce_min(conv5_flattened), tf.reduce_max(conv5_flattened), conv5_flattened], message="conv5_flattened")
 
-      n_fc_outputs = 1024
+      n_fc_outputs = 2048
       fc = tf.contrib.layers.fully_connected(inputs=conv5_flattened, num_outputs=n_fc_outputs,
                                              activation_fn=None, scope="fc1", reuse=False)
       fc = tf.contrib.layers.batch_norm(fc, center=True, scale=True, is_training=self.is_training_placeholder,
@@ -176,7 +176,7 @@ class R2N2Model(Model):
       delta_di = tf.Print(delta_di, [tf.reduce_min(delta_di), tf.reduce_max(delta_di), tf.reduce_mean(delta_di), delta_di], message="delta_di")
 
       # 3D GRU
-      grid_state_size = (4, 4, 4, 128)
+      grid_state_size = (8, 8, 8, 16)
       cell = GRU3dCell(fc.shape[-1].value, grid_state_size)
       states, h = tf.nn.dynamic_rnn(cell, fc, dtype=tf.float32)
       shape = [-1] + list(grid_state_size)
@@ -186,11 +186,11 @@ class R2N2Model(Model):
       # deconvolutional layers
       # 1st deconv layer
       h = models.unpool_3d.unpool_3d_zero_filled(h)
-      deconv11 = tf.layers.conv3d(h, filters=128, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+      deconv11 = tf.layers.conv3d(h, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
                                   activation=tf.nn.relu, use_bias=False, name="deconv11", reuse=False)
-      deconv12 = tf.layers.conv3d(deconv11, filters=128, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
+      deconv12 = tf.layers.conv3d(deconv11, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
                                   activation=tf.nn.relu, use_bias=False, name="deconv12", reuse=False)
-      deconv1_res = tf.layers.conv3d(h, filters=128, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
+      deconv1_res = tf.layers.conv3d(h, filters=64, kernel_size=[1, 1, 1], strides=(1, 1, 1), padding='same',
                                      activation=tf.nn.relu, use_bias=False, name="deconv1_res", reuse=False)
       deconv1 = deconv12 + deconv1_res
 
