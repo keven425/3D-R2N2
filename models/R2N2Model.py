@@ -205,7 +205,6 @@ class R2N2Model(Model):
       deconv2 = deconv22 + deconv2_res
 
       # 3rd deconv layer
-      deconv2 = models.unpool_3d.unpool_3d_zero_filled(deconv2)
       deconv31 = tf.layers.conv3d(deconv2, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
                                   activation=tf.nn.relu, use_bias=False, name="deconv31", reuse=False)
       deconv32 = tf.layers.conv3d(deconv31, filters=64, kernel_size=[3, 3, 3], strides=(1, 1, 1), padding='same',
