@@ -3,6 +3,7 @@ from __future__ import division
 
 import tensorflow as tf
 import numpy as np
+from lib.data_process import AZIMUTH_SCALE
 
 
 class GRU3dCell(tf.contrib.rnn.RNNCell):
@@ -44,6 +45,7 @@ class GRU3dCell(tf.contrib.rnn.RNNCell):
         scope = scope or type(self).__name__
 
         with tf.variable_scope(scope):
+            delta_azimuth = inputs[:, -1] # extract delta pose. last number
             shape = [-1] + list(self._state_size)
             _state = tf.reshape(state, shape=shape)
             n_h = self._state_size[-1]
@@ -96,6 +98,12 @@ class GRU3dCell(tf.contrib.rnn.RNNCell):
             o_t = tf.nn.tanh(tf.einsum('ij,jklmo->iklmo', inputs, W_h) + Uh_h + b_h)
 
             h_t = (1 - u_t) * _state + u_t * o_t
+            h = self._state_size[1]
+            w = self._state_size[2]
+            n_channels = self._state_size[-2] * self._state_size[-1]
+            h_t = tf.reshape(h_t, shape=(-1, h, w, n_channels))
+            delta_az_radian = delta_azimuth * AZIMUTH_SCALE * 0.017453292519943295
+            h_t = tf.contrib.image.rotate(h_t, delta_az_radian) # rotate
             h_t = tf.reshape(h_t, shape=(-1, self.state_size))
             new_state = h_t
 

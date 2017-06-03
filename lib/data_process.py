@@ -14,6 +14,8 @@ from lib.data_augmentation import preprocess_img
 from lib.data_io import get_voxel_file, get_rendering_file, get_pose_file, get_images_list
 from lib.binvox_rw import read_as_3d_array
 
+AZIMUTH_SCALE = 360. * 2 / cfg.TRAIN.NUM_RENDERING
+
 
 def print_error(func):
     '''Flush out error messages. Mainly used for debugging separate processes'''
@@ -193,9 +195,8 @@ class ReconstructionDataProcess(DataProcess):
         return _images, _poses
 
     def extract_pose(self, pose):
-        avg_diff = 360. * 2 / cfg.TRAIN.NUM_RENDERING
-        azimuth = pose[0] / avg_diff  # normalize to avoid crowding out other loss
-        elevation = pose[1] / avg_diff  # normalize. same reason as above
+        azimuth = pose[0] / AZIMUTH_SCALE  # normalize to avoid crowding out other loss
+        elevation = pose[1] / AZIMUTH_SCALE  # normalize. same reason as above
         distance = pose[3] * 10
         return [azimuth, elevation, distance]
 

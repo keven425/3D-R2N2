@@ -175,6 +175,14 @@ class R2N2Model(Model):
       delta_el = tf.Print(delta_el, [tf.reduce_min(delta_el), tf.reduce_max(delta_el), tf.reduce_mean(delta_el), delta_el], message="delta_el")
       delta_di = tf.Print(delta_di, [tf.reduce_min(delta_di), tf.reduce_max(delta_di), tf.reduce_mean(delta_di), delta_di], message="delta_di")
 
+      # obtain delta poses for each image
+      batch_size = tf.shape(delta_poses)[0]  # get batch size as tensor
+      # append [0, 0, 0] as last delta pose
+      delta_poses_in = tf.concat([delta_poses, tf.zeros((batch_size, 1, 3))], axis=1)
+      delta_az_in = tf.reshape(delta_poses_in[:, :, 0], (-1, self.config.CONST.N_VIEWS, 1))
+      # concat with RNN input
+      fc = tf.concat([fc, delta_az_in], axis=-1)
+
       # 3D GRU
       grid_state_size = (8, 8, 8, 16)
       cell = GRU3dCell(fc.shape[-1].value, grid_state_size)
