@@ -11,6 +11,7 @@ if (sys.version_info < (3, 0)):
 
 import shutil
 import numpy as np
+import tensorflow as tf
 from subprocess import call
 
 from PIL import Image
@@ -19,8 +20,11 @@ from lib.config import cfg, cfg_from_list
 from lib.solver import Solver
 from lib.voxel import voxel2obj
 
-DEFAULT_WEIGHTS = 'output/ResidualGRUNet/default_model/weights.npy'
+from models.R2N2Model import R2N2Model
 
+
+DEFAULT_WEIGHTS = './output/batch26_niter1000000_1496312952/'
+WEIGHTS_PATH = './output/batch26_niter1000000_1496312952/model.ckpt'
 
 def cmd_exists(cmd):
     return shutil.which(cmd) is not None
@@ -43,6 +47,33 @@ def load_demo_images():
     return np.array(ims)
 
 
+def evaluate():
+    with tf.Graph().as_default() as g:
+        model = R2N2Model(cfg)
+        saver = tf.train.Saver()
+
+    with tf.Session(graph=g) as session:
+        # load pre-trained weights
+        
+        save_dir = os.path.join(WEIGHTS_PATH)
+        print(save_dir)
+
+        print('Restoring model from: ' + WEIGHTS_PATH)
+        saver.restore(session, WEIGHTS_PATH)
+        variables_to_init = []
+        all_variables = tf.global_variables()
+        for var in all_variables:
+            if not session.run(tf.is_variable_initialized(var)):
+                variables_to_init.append(var)
+        
+        init = tf.variables_initializer(variables_to_init)
+
+        session.run(init)
+
+        # saver.restore(session, save_dir)
+        print("Model restored.")
+
+
 def main():
     '''Main demo function'''
     # Save prediction into a file named 'prediction.obj' or the given argument
@@ -51,8 +82,10 @@ def main():
     # load images
     demo_imgs = load_demo_images()
 
+    evaluate()
+
     # Download and load pretrained weights
-    download_model(DEFAULT_WEIGHTS)
+    # download_model(DEFAULT_WEIGHTS)
 
     # Use the default network model
     NetClass = load_model('ResidualGRUNet')
