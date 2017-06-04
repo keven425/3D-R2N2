@@ -301,3 +301,32 @@ May 31 20:32:04 training-35 multi-gpu-dev.log  Validation az RMSE: 1.020446, el 
 May 31 21:39:38 training-35 multi-gpu-dev.log  Validation az RMSE: 0.764744, el RMSE: 0.105536, di RMSE: 0.345658, IoU: 0.417628
 May 31 22:44:34 training-35 multi-gpu-dev.log  Validation az RMSE: 0.982071, el RMSE: 0.082171, di RMSE: 0.272464, IoU: 0.486797
 May 31 23:52:04 training-35 multi-gpu-dev.log  Validation az RMSE: 0.818213, el RMSE: 0.081632, di RMSE: 0.272716, IoU: 0.526490
+
+
+***************
+Pose regression multi task. fc in. scale iou. n_views=4
+***************
+Jun 2 06:10:31 mashgin-gtx dev.log  Validation az RMSE: 0.856801, el RMSE: 0.085795, di RMSE: 0.200173, IoU: 0.632165
+Jun 2 06:51:14 mashgin-gtx dev.log  Validation az RMSE: 0.940529, el RMSE: 0.080796, di RMSE: 0.176023, IoU: 0.629180
+Jun 2 07:30:23 mashgin-gtx dev.log  Validation az RMSE: 0.743778, el RMSE: 0.080129, di RMSE: 0.145557, IoU: 0.624545
+Jun 2 08:11:04 mashgin-gtx dev.log  Validation az RMSE: 0.732944, el RMSE: 0.096826, di RMSE: 0.222351, IoU: 0.638622
+Jun 2 08:51:44 mashgin-gtx dev.log  Validation az RMSE: 0.823947, el RMSE: 0.088934, di RMSE: 0.222371, IoU: 0.640780
+Jun 2 09:30:52 mashgin-gtx dev.log  Validation az RMSE: 0.632565, el RMSE: 0.068680, di RMSE: 0.172892, IoU: 0.638655
+Jun 2 10:11:38 mashgin-gtx dev.log  Validation az RMSE: 0.858999, el RMSE: 0.079698, di RMSE: 0.200603, IoU: 0.626912
+Jun 2 10:52:23 mashgin-gtx dev.log  Validation az RMSE: 0.619084, el RMSE: 0.073694, di RMSE: 0.209374, IoU: 0.629679
+Jun 2 11:31:31 mashgin-gtx dev.log  Validation az RMSE: 0.679292, el RMSE: 0.087374, di RMSE: 0.163420, IoU: 0.642970
+Jun 2 12:12:12 mashgin-gtx dev.log  Validation az RMSE: 0.840574, el RMSE: 0.065479, di RMSE: 0.164869, IoU: 0.638988
+Jun 2 12:52:59 mashgin-gtx dev.log  Validation az RMSE: 0.817978, el RMSE: 0.088172, di RMSE: 0.234292, IoU: 0.630799
+Jun 2 13:32:16 mashgin-gtx dev.log  Validation az RMSE: 0.658562, el RMSE: 0.069516, di RMSE: 0.183326, IoU: 0.620747
+
+
+***************
+Pose regression multi task. fc into gru. scale iou. n_views=4
+***************
+Jun 3 14:43:29 training-35 multi-gpu-dev.log  Validation az RMSE: 0.689162, el RMSE: 0.089959, di RMSE: 0.169283, IoU: 0.591116
+Jun 3 15:48:20 training-35 multi-gpu-dev.log  Validation az RMSE: 0.878936, el RMSE: 0.084140, di RMSE: 0.196761, IoU: 0.592940
+Jun 3 16:55:50 training-35 multi-gpu-dev.log  Validation az RMSE: 0.601150, el RMSE: 0.077514, di RMSE: 0.169076, IoU: 0.600031
+Jun 3 18:00:44 training-35 multi-gpu-dev.log  Validation az RMSE: 0.736728, el RMSE: 0.086328, di RMSE: 0.169097, IoU: 0.597355
+Jun 3 19:08:14 training-35 multi-gpu-dev.log  Validation az RMSE: 0.649306, el RMSE: 0.086095, di RMSE: 0.233708, IoU: 0.604648
+Jun 3 20:15:39 training-35 multi-gpu-dev.log  Validation az RMSE: 0.730341, el RMSE: 0.083799, di RMSE: 0.260282, IoU: 0.609525
+Jun 3 21:20:33 training-35 multi-gpu-dev.log  Validation az RMSE: 0.631687, el RMSE: 0.097603, di RMSE: 0.237737, IoU: 0.596431
