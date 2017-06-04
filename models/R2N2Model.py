@@ -58,6 +58,14 @@ class R2N2Model(Model):
     iou = lib.voxel.evaluate_voxel_prediction(vox_pred, labels_batch, thresh)
     return az_rmse, el_rmse, di_rmse, iou
 
+  def predict_on_batch(self, sess, input_batch):
+    feed = self.create_feed_dict(is_training=False,
+                                 input_batch=input_batch)
+    pred = sess.run(self.pred, feed_dict=feed)  # pick the class that has highest probability
+    thresh = self.config.TEST.VOXEL_THRESH[0]
+    probs = lib.voxel.softmax(pred)
+    return probs
+
   def add_placeholders(self):
     self.is_training_placeholder = tf.placeholder(tf.bool, shape=())
     self.input_placeholder = tf.placeholder(tf.float32, shape=(None, self.config.CONST.N_VIEWS, self.config.CONST.IMG_H, self.config.CONST.IMG_W, 3))
