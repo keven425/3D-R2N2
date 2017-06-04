@@ -160,12 +160,12 @@ class R2N2Model(Model):
       # predict pose delta
       states_concat = tf.concat([fc[:, 1:], fc[:, :-1]], axis=-1)
       states_concat_size = states_concat.get_shape()[-1].value
-      W_dfc1 = tf.get_variable("W_dfc1", shape=(states_concat_size, 128), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      W_dfc1 = tf.get_variable("W_dfc1", shape=(states_concat_size, 256), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
       fc_delta = tf.einsum('ijk,kl->ijl', states_concat, W_dfc1)
       fc_delta = tf.contrib.layers.batch_norm(fc_delta, center=True, scale=True, is_training=self.is_training_placeholder, scope='fc_delta_batch_norm')
       fc_delta = tf.nn.relu(fc_delta)
       fc_delta = tf.Print(fc_delta, [tf.reduce_min(fc_delta), tf.reduce_max(fc_delta), fc_delta], message="fc_delta")
-      W_dfc2 = tf.get_variable("W_dfc2", shape=(128, 3), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
+      W_dfc2 = tf.get_variable("W_dfc2", shape=(256, 3), initializer=tf.contrib.layers.xavier_initializer(), dtype=np.float32)
       b_dfc2 = tf.get_variable("b_dfc2", shape=3, dtype=np.float32)
       delta_poses = tf.einsum('ijk,kl->ijl', fc_delta, W_dfc2) + b_dfc2
       delta_az = delta_poses[:, :, 0]
@@ -177,7 +177,7 @@ class R2N2Model(Model):
 
       batch_size = tf.shape(delta_poses)[0] # get batch size as tensor
       # append [0, 0, 0] as last delta pose
-      delta_poses_in = tf.concat([delta_poses, tf.zeros((batch_size, 1, 3))], axis=1)
+      delta_poses_in = tf.concat([fc_delta, tf.zeros((batch_size, 1, 256))], axis=1)
       # augment fully connected output with delta poses info
       fc = tf.concat([fc, delta_poses_in], axis=-1)
 
