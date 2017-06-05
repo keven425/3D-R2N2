@@ -330,3 +330,14 @@ Jun 3 18:00:44 training-35 multi-gpu-dev.log  Validation az RMSE: 0.736728, el R
 Jun 3 19:08:14 training-35 multi-gpu-dev.log  Validation az RMSE: 0.649306, el RMSE: 0.086095, di RMSE: 0.233708, IoU: 0.604648
 Jun 3 20:15:39 training-35 multi-gpu-dev.log  Validation az RMSE: 0.730341, el RMSE: 0.083799, di RMSE: 0.260282, IoU: 0.609525
 Jun 3 21:20:33 training-35 multi-gpu-dev.log  Validation az RMSE: 0.631687, el RMSE: 0.097603, di RMSE: 0.237737, IoU: 0.596431
+
+
+***************
+random baseline pose
+***************
+
+zeros baseline:
+Validation az RMSE: 1.332356, el RMSE: 0.187353, di RMSE: 3.686858
+
+random baseline:
+Validation az RMSE: 2.047200, el RMSE: 0.367104, di RMSE: 6.798612
