@@ -53,3 +53,9 @@ def get_voxel_file(category, model_id):
 
 def get_rendering_file(category, model_id, rendering_id):
     return os.path.join(cfg.DIR.RENDERING_PATH % (category, model_id), '%02d.png' % rendering_id)
+
+def get_pose_file(category, model_id):
+    return os.path.join(cfg.DIR.RENDERING_PATH % (category, model_id), 'rendering_metadata.txt')
+
+def get_images_list(category, model_id):
+    return os.path.join(cfg.DIR.RENDERING_PATH % (category, model_id), 'renderings.txt')
