@@ -40,8 +40,8 @@ def download_model(fn):
 
 def load_demo_images():
     ims = []
-    for i in range(3):
-        im = Image.open('imgs/%d.png' % i)
+    for i in range(cfg.CONST.N_VIEWS):
+        im = Image.open('test-data/%d.png' % i)
         im = np.array(im)
         ims.append(im.astype(np.float32) / 255.)
     return np.array([ims])
@@ -71,7 +71,6 @@ def evaluate(inputs):
         session.run(init)
         probs = model.predict_on_batch(session, inputs)
         return probs
-
 
 def main():
     '''Main demo function'''
